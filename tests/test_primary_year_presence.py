@@ -18,6 +18,7 @@ YEAR_KEYED = [
     ("staff_counts_effective", "effective_year"),
     ("sped_estimates", "estimate_year"),
     ("lct_calculations", "enrollment_source_year"),
+    ("ccd_school_staffing", "source_year"),      # #1080: only rebuild phase 3 chains this import
 ]
 
 

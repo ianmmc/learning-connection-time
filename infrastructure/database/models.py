@@ -466,7 +466,10 @@ class CCDSchoolStaffing(Base):
     memb_12: Mapped[Optional[int]] = mapped_column(Integer)
     memb_13: Mapped[Optional[int]] = mapped_column(Integer)
     memb_ug: Mapped[Optional[int]] = mapped_column(Integer)
-    membership_flags = Column(JSONB)
+    # none_as_null: a school with no flagged grade is SQL NULL, not the JSON scalar `null` (the
+    # default), so `membership_flags IS NULL` and jsonb_each_text() behave (#1069; lct_calculations
+    # .component_years carries the same trap).
+    membership_flags = Column(JSONB(none_as_null=True))
     src_029_sha256: Mapped[str] = mapped_column(String(64), nullable=False)
     src_052_sha256: Mapped[str] = mapped_column(String(64), nullable=False)
     src_059_sha256: Mapped[str] = mapped_column(String(64), nullable=False)

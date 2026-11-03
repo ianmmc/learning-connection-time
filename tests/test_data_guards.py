@@ -178,6 +178,24 @@ class TestDistinctYearsHelper:
             distinct_years(self._Session([]), table, column)
 
 
+class TestRequireMatchCoverage:
+    """#1085: the #611 guard has ONE home, shared by the LEA importer and the school-file importer."""
+
+    def test_passes_at_the_measured_real_rate(self):
+        from infrastructure.utilities.data_guards import require_match_coverage
+        require_match_coverage(18587, 17644, 17842, label="school files")      # 98.9% of min(file, ours)
+
+    def test_refuses_the_stripped_leading_zero_shape(self):
+        from infrastructure.utilities.data_guards import DataGuardError, require_match_coverage
+        with pytest.raises(DataGuardError, match="only 14,597 of 17,842 .* below the 95% floor"):
+            require_match_coverage(18587, 14597, 17842, label="school files")
+
+    def test_the_denominator_is_the_smaller_set_and_an_empty_one_is_not_a_verdict(self):
+        from infrastructure.utilities.data_guards import require_match_coverage
+        require_match_coverage(500, 500, 17842, label="sample")
+        require_match_coverage(0, 0, 17842, label="empty")
+
+
 class TestReconcileTotalReferenceSideMultiple:
     """#1091: the #970 signature can sit on the REFERENCE side (the published total double-counts, or
     whole component categories were dropped); the message must say which side, not 'tolerance'."""

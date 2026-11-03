@@ -58,6 +58,7 @@ SCRIPTS = {
     "import_district_urls": "infrastructure/scripts/import_district_urls.py",
     "apply_ctc": "infrastructure/database/migrations/apply_ctc_classification.py",
     "import_staff_enrollment": "infrastructure/database/migrations/import_staff_and_enrollment.py",
+    "import_ccd_school_staffing": "infrastructure/database/migrations/import_ccd_school_staffing.py",
     "import_sped_baseline": "infrastructure/database/migrations/import_sped_baseline.py",
     "apply_sped_estimates": "infrastructure/database/migrations/apply_sped_estimates.py",
     "import_ca_lcff": "infrastructure/database/migrations/import_ca_lcff.py",
@@ -204,13 +205,19 @@ def phase_2b_classifications(dry_run: bool = False, year: str = NCES_PRIMARY_YEA
 
 
 def phase_3_staff_enrollment(dry_run: bool = False, year: str = NCES_PRIMARY_YEAR) -> bool:
-    """Phase 3: Load staff counts and enrollment."""
+    """Phase 3: Load staff counts and enrollment (LEA files), then the school files for the same year
+    (ccd_school_staffing, #1039 — the source of the band scopes). This phase is the one place the
+    school import is chained after the LEA import; a standalone `import_staff_and_enrollment.py` run
+    does NOT refresh ccd_school_staffing (#1080 — tests/test_primary_year_presence.py catches a
+    vintage bump that skipped it). A school-import failure fails the phase."""
     print("\n" + "=" * 60)
     print("PHASE 3: LOAD STAFF COUNTS AND ENROLLMENT")
     print("=" * 60)
 
     args = ["--year", year]
-    return run_script(SCRIPTS["import_staff_enrollment"], args, dry_run=dry_run)
+    if not run_script(SCRIPTS["import_staff_enrollment"], args, dry_run=dry_run):
+        return False
+    return run_script(SCRIPTS["import_ccd_school_staffing"], args, dry_run=dry_run)
 
 
 def phase_3b_state_layers(dry_run: bool = False) -> bool:
