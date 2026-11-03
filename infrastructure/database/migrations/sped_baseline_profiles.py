@@ -14,12 +14,12 @@ Plan + findings: docs/technical-notes/production-quality-control-research/
 
 from __future__ import annotations
 
-import hashlib
 import re
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Mapping, Optional
 
+from infrastructure.utilities import source_manifest
 from infrastructure.utilities.data_guards import DataGuardError
 
 FEDERAL_DIR = Path(__file__).resolve().parents[3] / "data" / "raw" / "federal"
@@ -194,11 +194,7 @@ def verify_source(src: SourceFile) -> None:
     path = src.path
     if not path.exists():
         raise DataGuardError(f"SPED baseline source missing: {path}")
-    h = hashlib.sha256()
-    with open(path, "rb") as f:
-        for chunk in iter(lambda: f.read(1 << 20), b""):
-            h.update(chunk)
-    actual = h.hexdigest()
+    actual = source_manifest.sha256_file(path)          # the one chunked sha256 (#1089)
     if actual != src.sha256:
         raise DataGuardError(f"{src.relpath}: sha256 {actual} != pinned {src.sha256} — the file changed "
                              f"(ED revises in place); re-pin deliberately after re-reviewing it")

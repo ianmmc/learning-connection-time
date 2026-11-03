@@ -19,13 +19,13 @@ the tracked manifest already pins is absent or carries different bytes (that is 
 manifest exists to detect, not a reason to re-pin). `--repin` is the explicit, logged override for the
 second case: the operator is saying the new bytes are the intended source.
 
-No retrieval date is recorded, because none is known. `file_mtime` is the on-disk file's mtime
-(UTC date), a measured fact, not a claim of when NCES served it.
+No retrieval date is recorded, because none is known, and nothing machine-dependent is either: the
+file mtime that used to be recorded made `--write` rewrite the tracked JSON after any re-copy with no
+byte change (#1089). The sha256 and size are the record.
 """
 from __future__ import annotations
 
 import argparse
-import datetime as dt
 import json
 from pathlib import Path
 
@@ -40,7 +40,7 @@ TABLES = ("school_directory", "school_membership", "school_staff", "district_sta
 def _entry(year: str, table: str, root: Path) -> dict | None:
     url = CCD_CATALOG[year][table]["url"]
     stem = url.rsplit("/", 1)[1].removesuffix(".zip")
-    folder = root / BASE / year.replace("-", "_")
+    folder = SM.year_folder(BASE, year, root)
     zip_path, csv_path = folder / f"{stem}.zip", folder / f"{stem}.csv"
     path = zip_path if zip_path.exists() else csv_path if csv_path.exists() else None
     if path is None:
@@ -48,7 +48,6 @@ def _entry(year: str, table: str, root: Path) -> dict | None:
     e = {"file": path.name, "bytes": path.stat().st_size, "sha256": SM.sha256_file(path), "url": url}
     if path.suffix == ".csv":
         e["member"] = f"{stem}.csv"
-    e["file_mtime"] = dt.datetime.fromtimestamp(path.stat().st_mtime, dt.timezone.utc).date().isoformat()
     return e
 
 
@@ -56,7 +55,7 @@ def catalogued_years() -> list:
     return sorted(y for y in CCD_CATALOG if all(t in CCD_CATALOG[y] for t in TABLES))
 
 
-def build(root: Path = SM.REPO) -> tuple[dict, list]:
+def build(root: Path | None = None) -> tuple[dict, list]:
     """The manifest as disk would have it, plus the catalogued files disk lacks."""
     manifest, missing = {"source": SOURCE, "base": BASE, "years": {}}, []
     for year in catalogued_years():
@@ -77,7 +76,7 @@ def source_md(year: str, entries: list) -> str:
     lines = [f"# Provenance (NCES CCD {year}; hashes also tracked in config/source-manifests/{SOURCE}.json)",
              "", "| file | sha256 | source |", "|---|---|---|"]
     for e in entries:
-        src = e["url"] + (f" (member {e['member']})" if "member" in e else "") + f" (file mtime {e['file_mtime']})"
+        src = e["url"] + (f" (member {e['member']})" if "member" in e else "")
         lines.append(f"| {e['file']} | {e['sha256']} | {src} |")
     return "\n".join(lines) + "\n"
 
@@ -97,7 +96,7 @@ def refusals(tracked: dict | None, missing: list, root: Path, repin: bool) -> li
     return why
 
 
-def main(argv=None, root: Path = SM.REPO, manifest_dir: Path = SM.MANIFEST_DIR) -> int:
+def main(argv=None, root: Path | None = None, manifest_dir: Path = SM.MANIFEST_DIR) -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--write", action="store_true", help="write the tracked manifest (config/source-manifests/)")
     ap.add_argument("--repin", action="store_true",
@@ -128,7 +127,7 @@ def main(argv=None, root: Path = SM.REPO, manifest_dir: Path = SM.MANIFEST_DIR) 
         print(f"wrote {tracked_path}")
     if args.source_md:
         for year, entries in manifest["years"].items():
-            (root / BASE / year.replace("-", "_") / "SOURCE.md").write_text(source_md(year, entries), encoding="utf-8")
+            (SM.year_folder(BASE, year, root) / "SOURCE.md").write_text(source_md(year, entries), encoding="utf-8")
         print(f"wrote {len(manifest['years'])} SOURCE.md")
     return 0
 

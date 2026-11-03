@@ -86,6 +86,13 @@ def reconcile_total(
             f"({component_sum:,.0f} vs {reference_total:,.0f}) — an exact integer multiple is the "
             f"signature of the total row being summed in as a component (#970)"
         )
+    inverse = 1.0 / ratio if ratio else 0.0
+    if round(inverse) >= 2 and abs(inverse - round(inverse)) <= 0.001:
+        raise DataGuardError(
+            f"{label}: the source's own total is {inverse:.3f}× the component sum "
+            f"({reference_total:,.0f} vs {component_sum:,.0f}) — the same #970 signature on the "
+            f"REFERENCE side: the published total double-counts, or whole component categories were dropped (#1091)"
+        )
     if abs(ratio - 1.0) > tolerance:
         raise DataGuardError(
             f"{label}: component sum {component_sum:,.0f} vs source total {reference_total:,.0f} "

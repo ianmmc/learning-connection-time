@@ -11,7 +11,7 @@ feeds it the real distinct years — marker `integration`, excluded from the fas
 
 import pytest
 
-from infrastructure.utilities.school_year import COVID_EXCLUDED_YEARS, NCES_PRIMARY_YEAR
+from infrastructure.utilities.school_year import NCES_PRIMARY_YEAR, is_covid_year, start_year
 
 YEAR_KEYED = [
     ("enrollment_by_grade", "source_year"),
@@ -29,7 +29,7 @@ def check_primary_year_presence(table: str, column: str, years: set[str], primar
         f"{table}.{column} carries {sorted(years)} but NCES_PRIMARY_YEAR is {primary} — "
         f"the constant was bumped without an ingest (or the ingest targeted another year)"
     )
-    newest = max(y for y in years if y not in COVID_EXCLUDED_YEARS)
+    newest = max((y for y in years if not is_covid_year(y)), key=start_year)   # not lexicographic (#1091)
     assert newest == primary, (
         f"{table}.{column} already carries {newest}, newer than NCES_PRIMARY_YEAR={primary} — "
         f"an ingest landed without the bump (school_year.py)"

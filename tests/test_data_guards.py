@@ -194,3 +194,20 @@ class TestRequireMatchCoverage:
         from infrastructure.utilities.data_guards import require_match_coverage
         require_match_coverage(500, 500, 17842, label="sample")
         require_match_coverage(0, 0, 17842, label="empty")
+
+
+class TestReconcileTotalReferenceSideMultiple:
+    """#1091: the #970 signature can sit on the REFERENCE side (the published total double-counts, or
+    whole component categories were dropped); the message must say which side, not 'tolerance'."""
+
+    def test_reference_twice_the_components_names_the_reference_side(self):
+        with pytest.raises(DataGuardError, match=r"the source's own total is 2\.000× the component sum"):
+            reconcile_total(12_261_274, 24_522_548, label="child count")
+
+    def test_components_twice_the_reference_still_names_the_component_side(self):
+        with pytest.raises(DataGuardError, match=r"component sum is 2\.000× the source's own total"):
+            reconcile_total(24_522_548, 12_261_274, label="child count")
+
+    def test_a_non_integer_shortfall_is_still_the_tolerance_message(self):
+        with pytest.raises(DataGuardError, match="exceeds tolerance"):
+            reconcile_total(70, 100, label="x")

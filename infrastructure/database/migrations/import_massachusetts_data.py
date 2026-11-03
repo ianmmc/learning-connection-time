@@ -465,7 +465,8 @@ def main():
     global TEACHER_DATA_YEAR, ENROLLMENT_DATA_YEAR
     parser = argparse.ArgumentParser(description="Import DESE teacher FTE + E2C Hub enrollment exports")
     parser.add_argument("--teacher-year", default=TEACHER_DATA_YEAR,
-                        help=f"Vintage of the DESE teacher file (default: {TEACHER_DATA_YEAR}; selects 'MA <year> teacherdata.xlsx' and stamps the rows)")
+                        help=f"Vintage of the DESE teacher file (default: {TEACHER_DATA_YEAR}; selects "
+                             f"'<year>/teacherdata.xlsx', else the legacy 'MA <year> teacherdata.xlsx', and stamps the rows)")
     parser.add_argument("--enrollment-year", default=ENROLLMENT_DATA_YEAR,
                         help=f"Vintage the E2C Hub enrollment export is filtered to (default: {ENROLLMENT_DATA_YEAR}; stamps the rows)")
     parser.add_argument("--skip-enrollment", action="store_true",
@@ -504,7 +505,10 @@ def main():
         sys.exit(1)
 
     if enrollment_df is None and not args.skip_enrollment:
-        logger.error("Failed to load enrollment data file. Aborting.")
+        # #1092: the E2C Hub export this importer parses is not on disk (the drop under MA_DATA_DIR is
+        # the newer enrollmentbygrade.xlsx report, a different shape; its refresh is tracked there).
+        logger.error(f"Enrollment export not loadable: {ENROLLMENT_FILE}. Pass --skip-enrollment to "
+                     f"import the teacher file alone, or refresh the enrollment layer (#1092). Aborting.")
         sys.exit(1)
 
     # Load crosswalk

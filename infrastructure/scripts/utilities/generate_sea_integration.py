@@ -36,7 +36,7 @@ import re
 project_root = Path(__file__).parent.parent.parent.parent
 sys.path.insert(0, str(project_root))
 
-from infrastructure.utilities.school_year import NCES_PRIMARY_YEAR  # noqa: E402 — after the shim (#987)
+from infrastructure.utilities.school_year import is_acceptable_data_year  # noqa: E402 — after the shim (#987)
 
 # State name mapping
 STATE_NAMES = {
@@ -507,12 +507,20 @@ def main():
 
     parser.add_argument('--state', '-s', type=str, help='Two-letter state code (e.g., OH)')
     parser.add_argument('--agency', '-a', type=str, help='Agency abbreviation (e.g., ODE)')
-    parser.add_argument('--year', '-y', type=str, default=NCES_PRIMARY_YEAR, help=f'Data year (default: NCES_PRIMARY_YEAR = {NCES_PRIMARY_YEAR})')
+    # No default (#1091): this is the SEA source file's vintage, stamped into the generated importer and
+    # test; NCES_PRIMARY_YEAR is the federal vintage and says nothing about a state's export.
+    parser.add_argument('--year', '-y', type=str, default=None,
+                        help='Vintage of the SEA export being integrated, e.g. 2023-24 (required unless --analyze)')
     parser.add_argument('--analyze', type=str, help='Path to Excel/CSV file or directory to analyze')
     parser.add_argument('--output', '-o', type=str, help='Output directory (default: current)')
     parser.add_argument('--dry-run', action='store_true', help='Print output without writing files')
 
     args = parser.parse_args()
+    if not args.analyze:
+        if not args.year:
+            parser.error("--year is required when generating: it is the SEA export's own vintage (#1091)")
+        if not is_acceptable_data_year(args.year):
+            parser.error(f"--year {args.year!r} is not a usable school year (malformed or COVID-era)")
 
     # Analyze mode
     if args.analyze:

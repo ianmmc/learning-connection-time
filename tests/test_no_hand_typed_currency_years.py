@@ -23,26 +23,23 @@ from __future__ import annotations
 
 import ast
 import functools
-import json
 import re
 from collections import Counter
-from pathlib import Path
 
 import pytest
 
-REPO = Path(__file__).resolve().parents[1]
-MANIFEST = json.loads((REPO / "arch-manifest.json").read_text(encoding="utf-8"))
+from tests.test_arch_manifest import MANIFEST, REPO, _scanned_py_files   # the ONE loader + walker (#1091)
+
 SECTION = MANIFEST["data_year_literals"]
 
 YEAR = re.compile(r"^20\d\d-\d\d$")
 
 
 def _scanned_files():
-    excluded = set(MANIFEST["scan"]["excluded_dirs"])
-    for root in MANIFEST["scan"]["python_roots"]:
-        for p in sorted((REPO / root).rglob("*.py")):
-            if not (set(p.parts) & excluded) and not p.name.startswith("test_"):
-                yield p
+    """The manifest's scan roots minus test modules (a test may spell a year on purpose)."""
+    for p in sorted(_scanned_py_files()):
+        if not p.name.startswith("test_"):
+            yield p
 
 
 def _docstring_nodes(tree: ast.AST) -> set[int]:

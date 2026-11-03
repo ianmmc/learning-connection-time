@@ -427,6 +427,10 @@ class DistrictGradeMinutes(Base):
 # No FK to districts: the CCD files carry LEAs the districts table does not.
 
 _BAND_CHECK = "band IN ('elementary', 'middle', 'high')"
+# The K-12 grade tokens the derived tables carry (lea_grade_teacher_fte.grade, lea_band_staffing.grade_lo/hi).
+_K12_GRADES = "('KG','01','02','03','04','05','06','07','08','09','10','11','12')"
+# Numeric(..., asdecimal=False) on the 033 tables: Python floats, not Decimal, so `coverage >= 0.9`
+# compares as the Mapped[float] annotation says (Decimal('0.90000') >= 0.9 is False; #1088). DDL unchanged.
 
 
 class CCDSchoolStaffing(Base):
@@ -444,7 +448,7 @@ class CCDSchoolStaffing(Base):
     level: Mapped[Optional[str]] = mapped_column(String(40))
     gslo: Mapped[Optional[str]] = mapped_column(String(4))
     gshi: Mapped[Optional[str]] = mapped_column(String(4))
-    teachers_fte: Mapped[Optional[float]] = mapped_column(Numeric(10, 2))
+    teachers_fte: Mapped[Optional[float]] = mapped_column(Numeric(10, 2, asdecimal=False))
     teachers_dms_flag: Mapped[Optional[str]] = mapped_column(String(30))
     memb_pk: Mapped[Optional[int]] = mapped_column(Integer)
     memb_kg: Mapped[Optional[int]] = mapped_column(Integer)
@@ -488,10 +492,10 @@ class LEASchoolStaffing(Base):
 
     leaid: Mapped[str] = mapped_column(String(10), nullable=False)
     source_year: Mapped[str] = mapped_column(String(10), nullable=False)
-    lea_teachers_fte: Mapped[Optional[float]] = mapped_column(Numeric(10, 2))
-    school_teachers_fte: Mapped[float] = mapped_column(Numeric(10, 2), nullable=False)
-    unattributed_fte: Mapped[Optional[float]] = mapped_column(Numeric(10, 2))
-    pk_teachers_reported: Mapped[Optional[float]] = mapped_column(Numeric(10, 2))
+    lea_teachers_fte: Mapped[Optional[float]] = mapped_column(Numeric(10, 2, asdecimal=False))
+    school_teachers_fte: Mapped[float] = mapped_column(Numeric(10, 2, asdecimal=False), nullable=False)
+    unattributed_fte: Mapped[Optional[float]] = mapped_column(Numeric(10, 2, asdecimal=False))
+    pk_teachers_reported: Mapped[Optional[float]] = mapped_column(Numeric(10, 2, asdecimal=False))
     pk_teachers_dms_flag: Mapped[Optional[str]] = mapped_column(String(30))
     pk_membership: Mapped[int] = mapped_column(Integer, nullable=False)
     pk_zero_with_students: Mapped[bool] = mapped_column(Boolean, nullable=False)
@@ -514,8 +518,8 @@ class LEABandStaffing(Base):
     excluded_school_count: Mapped[int] = mapped_column(Integer, nullable=False)
     membership_reporting: Mapped[int] = mapped_column(Integer, nullable=False)
     membership_total: Mapped[int] = mapped_column(Integer, nullable=False)
-    coverage: Mapped[float] = mapped_column(Numeric(6, 5), nullable=False)
-    pk_fte_removed: Mapped[float] = mapped_column(Numeric(12, 4), nullable=False)
+    coverage: Mapped[float] = mapped_column(Numeric(6, 5, asdecimal=False), nullable=False)
+    pk_fte_removed: Mapped[float] = mapped_column(Numeric(12, 4, asdecimal=False), nullable=False)
     published: Mapped[bool] = mapped_column(Boolean, nullable=False)
     method_version: Mapped[str] = mapped_column(String(20), nullable=False)
     derived_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, server_default=func.now())
@@ -524,6 +528,8 @@ class LEABandStaffing(Base):
         PrimaryKeyConstraint("leaid", "source_year", "band", name="pk_lea_band_staffing"),
         CheckConstraint(_BAND_CHECK, name="chk_lbs_band"),
         CheckConstraint("coverage >= 0 AND coverage <= 1", name="chk_lbs_coverage"),
+        CheckConstraint(f"grade_lo IN {_K12_GRADES}", name="chk_lbs_grade_lo"),   # migration 034 (#1088)
+        CheckConstraint(f"grade_hi IN {_K12_GRADES}", name="chk_lbs_grade_hi"),
     )
 
 
@@ -536,7 +542,7 @@ class LEAGradeTeacherFTE(Base):
     source_year: Mapped[str] = mapped_column(String(10), nullable=False)
     band: Mapped[str] = mapped_column(String(20), nullable=False)
     grade: Mapped[str] = mapped_column(String(4), nullable=False)
-    teacher_fte: Mapped[float] = mapped_column(Numeric(12, 4), nullable=False)
+    teacher_fte: Mapped[float] = mapped_column(Numeric(12, 4, asdecimal=False), nullable=False)
     membership: Mapped[int] = mapped_column(Integer, nullable=False)
     school_count: Mapped[int] = mapped_column(Integer, nullable=False)
     method_version: Mapped[str] = mapped_column(String(20), nullable=False)
@@ -545,7 +551,7 @@ class LEAGradeTeacherFTE(Base):
     __table_args__ = (
         PrimaryKeyConstraint("leaid", "source_year", "band", "grade", name="pk_lea_grade_teacher_fte"),
         CheckConstraint(_BAND_CHECK, name="chk_lgtf_band"),
-        CheckConstraint("grade IN ('KG','01','02','03','04','05','06','07','08','09','10','11','12')", name="chk_lgtf_grade"),
+        CheckConstraint(f"grade IN {_K12_GRADES}", name="chk_lgtf_grade"),
         CheckConstraint("teacher_fte >= 0", name="chk_lgtf_fte"),
         {"comment": "Teacher FTE attributed to (district, band, grade) from ccd_school_staffing: single-band "
                     "schools whole, combined schools split by grade membership, the LEA-reported Pre-K FTE "

@@ -68,7 +68,9 @@ class TestChildCount2024Profile:
         """A 5-21 Total that does not match its own environment rows fails even when 6-21 does."""
         rows = [(_row24("Total, School Age", "-", "50", "2100", "1000") if r[2] == "Total, School Age" else r)
                 for r in _good_rows_24()]
-        with pytest.raises(DataGuardError, match=r"\(5-21\).*exceeds tolerance"):
+        # 2,100 vs 1,050 is an exact 2× on the reference side, which #1091 names as the #970 signature
+        # rather than a generic tolerance miss; either way the 5-21 band fails on its own.
+        with pytest.raises(DataGuardError, match=r"\(5-21\).*(exceeds tolerance|2\.000× the component sum)"):
             parse_child_count_rows(HEADERS_24, rows, CC24)
 
     def test_2017_labels_under_the_2024_profile_fail_g2(self):
