@@ -564,8 +564,9 @@ VALID_DATA_YEARS = {'2018-19', '2023-24', '2024-25', '2025-26'}
 # =============================================================================
 # SEA VINTAGE REGISTRY — the ONE home of each state's declared SEA vintage (#990)
 # =============================================================================
-# `year` is the STAFF vintage the importer stamps and the merge selects on; `enroll_year` is present only
-# where the enrollment export is a different vintage (MA: DESE publishes enrollment a year ahead of staffing).
+# `year` is the STAFF vintage the importer stamps and the merge selects on; `enroll_year` is present where
+# the enrollment export's vintage is declared on its own (MA: DESE publishes enrollment as a separate
+# export; equal to `year` since the 2025-26 teacher re-import of 2026-11-01, #1015/#1093).
 # merge_sea_precedence and compare_sea_vs_federal_lct IMPORT this; tests/test_sea_states_one_home.py pins
 # each importer's own vintage constant to it. A re-stamped import moves the importer AND this entry.
 SEA_STATES = {

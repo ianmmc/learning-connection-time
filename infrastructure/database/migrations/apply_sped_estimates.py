@@ -33,7 +33,7 @@ from infrastructure.database.connection import session_scope
 from infrastructure.database.queries import distinct_years
 from infrastructure.database.migrations.sped_baseline_profiles import get_profile
 from infrastructure.utilities.data_guards import DataGuardError, require_nonempty_selection
-from infrastructure.utilities.school_year import COVID_EXCLUDED_YEARS, NCES_PRIMARY_YEAR, SPED_BASELINE_YEAR
+from infrastructure.utilities.school_year import NCES_PRIMARY_YEAR, SPED_BASELINE_YEAR, is_covid_year
 from infrastructure.database.models import (
     District, SpedStateBaseline, SpedLeaBaseline, SpedEstimate, DataLineage,
     EnrollmentByGrade, StaffCountsEffective,
@@ -70,7 +70,7 @@ def select_year_totals(session, year: str) -> list[YearTotals]:
     the #979/#986 concern), and the table is keyed (district_id, effective_year), so no fan-out.
     `districts` itself is a single-vintage snapshot and is used only for identity (#972).
     """
-    if year in COVID_EXCLUDED_YEARS:
+    if is_covid_year(year):
         raise DataGuardError(f"apply_sped_estimates: {year} is a COVID-excluded year (REQ-007)")
     rows = (
         session.query(

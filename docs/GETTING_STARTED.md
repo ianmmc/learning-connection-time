@@ -211,6 +211,13 @@ docker exec lct_postgres pg_dump -U lct_user -d governance \
 > s=gdb.session_scope().__enter__(); print({t: s.execute(text(f'SELECT COUNT(*) FROM {t}')).scalar()
 > for t in ['label','handoff','stage8_approval','band_exclusion','human_added_fact']})"`
 
+> **Restore trap for the LCT DB (#1093).** An LCT backup taken before 2026-11-01 carries MA staff
+> rows stamped `2025-26` that are the 2024-25 DESE export (the #23 mislabel; relabelled 2026-11-01,
+> then the real 2025-26 file imported). `SEA_STATES['MA']` now says `2025-26`, so the #984
+> label-mismatch guard CANNOT fire on such a restore — the labels agree while the data is a year off.
+> After restoring one, re-run `import_massachusetts_data.py --relabel-staff 2025-26 2024-25
+> --skip-enrollment` and then the 2025-26 import before any SEA merge.
+
 **Step 2 — the re-ingest.**
 
 ```bash

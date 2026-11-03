@@ -31,6 +31,7 @@ Modelled on `public-ed-data-navigator/src/ednav/rawread.py` (`_Deflate64Member` 
 from __future__ import annotations
 
 import io
+import os
 import struct
 import zipfile
 import zlib
@@ -47,6 +48,7 @@ class _Deflate64Member(io.RawIOBase):
     """Stream one Deflate64 member; verify size and CRC-32 on the slice that consumes the last byte."""
 
     def __init__(self, zip_path, info: zipfile.ZipInfo):
+        self._f = None                        # a failed open must leave close() (the finalizer) safe (#1087)
         self._f = open(zip_path, "rb")
         try:
             self._f.seek(info.header_offset)
@@ -113,22 +115,32 @@ class _Deflate64Member(io.RawIOBase):
         return n
 
     def close(self):
-        self._f.close()
+        if self._f is not None:
+            self._f.close()
         super().close()
 
 
 class _ZipExtRaw(io.RawIOBase):
     """A stored/deflate member as a non-seekable raw stream, so every compression yields the same
-    file-object contract (#1056). zipfile does the CRC check on the read that consumes the last byte."""
+    file-object contract (#1056). zipfile does the CRC check on the read that consumes the last byte;
+    a corrupt deflate stream, though, surfaces from zipfile as zlib's own `zlib.error` BEFORE that
+    check — relabelled here as `BadZipFile` and latched, so the contract holds for every compression
+    (#1087: 3 of 30 single-byte flips of a real deflate member raised zlib.error)."""
 
     def __init__(self, ext: zipfile.ZipExtFile):
-        self._ext = ext
+        self._ext, self._error = ext, None
 
     def readable(self):
         return True
 
     def readinto(self, b):
-        data = self._ext.read(len(b))
+        if self._error is not None:
+            raise self._error
+        try:
+            data = self._ext.read(len(b))
+        except zlib.error as exc:
+            self._error = zipfile.BadZipFile(f"{self._ext.name}: corrupt deflate stream ({exc})")
+            raise self._error from exc
         n = len(data)
         b[:n] = data
         return n
@@ -141,7 +153,12 @@ class _ZipExtRaw(io.RawIOBase):
 @contextmanager
 def open_member(zip_path, member: str):
     """Binary stream of one zip member, whatever its compression: an `io.BufferedReader`, readable
-    and not seekable. Raises `zipfile.BadZipFile` on a corrupt, mismatched or truncated member."""
+    and not seekable. Raises `zipfile.BadZipFile` on a corrupt, mismatched or truncated member.
+    `zip_path` is a filesystem path, never a file object: a Deflate64 member is re-opened by path,
+    so anything else is refused here, before any file is opened (#1087)."""
+    if not isinstance(zip_path, (str, bytes, os.PathLike)):
+        raise TypeError(f"open_member needs a filesystem path, got {type(zip_path).__name__} "
+                        f"(a Deflate64 member is re-opened by path)")
     with zipfile.ZipFile(zip_path) as z:
         info = z.getinfo(member)
         if info.compress_type == DEFLATE64:

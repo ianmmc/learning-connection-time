@@ -5,8 +5,10 @@ local header + central directory + EOCD records, because `zipfile` cannot write 
 A2 (reader half): a CRC or size mismatch, a corrupt stream, or a truncated member raises
 `zipfile.BadZipFile`, never a short read.
 """
+import gc
 import io
 import struct
+import sys
 import zipfile
 import zlib
 from pathlib import Path
@@ -305,3 +307,65 @@ def test_real_ccd_school_membership_header(method):
     with ZM.open_member(path, member) as f:
         header = f.readline().decode("latin-1")
     assert header.startswith("SCHOOL_YEAR,") and "NCESSCH" in header and "STUDENT_COUNT" in header
+
+
+# ----------------------------------------------------------------------------- #1087: the path contract
+def _unraisables(monkeypatch):
+    seen = []
+    monkeypatch.setattr(sys, "unraisablehook", lambda u: seen.append(u))
+    return seen
+
+
+def test_a_file_object_is_refused_before_anything_is_opened(tmp_path, monkeypatch):
+    path = _build_zip(tmp_path / "m.zip", "m.csv", PAYLOAD)
+    seen = _unraisables(monkeypatch)
+    with pytest.raises(TypeError, match="needs a filesystem path, got BytesIO"):
+        with ZM.open_member(io.BytesIO(path.read_bytes()), "m.csv"):
+            pass
+    gc.collect()
+    assert seen == []                                   # no half-built reader whose finalizer raises
+
+
+def test_a_failed_open_leaves_no_half_built_reader(tmp_path, monkeypatch):
+    path = _build_zip(tmp_path / "m.zip", "m.csv", PAYLOAD)
+    with zipfile.ZipFile(path) as z:
+        info = z.getinfo("m.csv")
+    seen = _unraisables(monkeypatch)
+    with pytest.raises(FileNotFoundError):
+        ZM._Deflate64Member(tmp_path / "missing.zip", info)
+    gc.collect()
+    assert seen == []
+
+
+def test_a_corrupt_deflate_member_raises_badzipfile_never_zlib_error(tmp_path):
+    """zipfile surfaces zlib's own error for some corruptions before its CRC check; every single-byte
+    flip inside the compressed payload must come out as BadZipFile (3 of 30 were zlib.error, #1087)."""
+    path = tmp_path / "d.zip"
+    with zipfile.ZipFile(path, "w", zipfile.ZIP_DEFLATED) as z:
+        z.writestr("d.csv", PAYLOAD)
+    with zipfile.ZipFile(path) as z:
+        info = z.getinfo("d.csv")
+    raw = bytearray(path.read_bytes())
+    start = info.header_offset + 30 + len(info.filename.encode()) + len(info.extra)
+    offsets = range(start, start + info.compress_size, max(1, info.compress_size // 30))
+    for off in list(offsets)[:30]:
+        flipped = bytearray(raw)
+        flipped[off] ^= 0xFF
+        path.write_bytes(flipped)
+        with pytest.raises(zipfile.BadZipFile):
+            _read_all(path, "d.csv")
+
+
+def test_a_zlib_error_is_relabelled_and_latched(tmp_path, monkeypatch):
+    path = tmp_path / "d.zip"
+    with zipfile.ZipFile(path, "w", zipfile.ZIP_DEFLATED) as z:
+        z.writestr("d.csv", PAYLOAD)
+
+    def boom(self, n=-1):
+        raise zlib.error("Error -3 while decompressing data: invalid distance too far back")
+    monkeypatch.setattr(zipfile.ZipExtFile, "read", boom)
+    with ZM.open_member(path, "d.csv") as f:
+        with pytest.raises(zipfile.BadZipFile, match="d.csv: corrupt deflate stream"):
+            f.read(10)
+        with pytest.raises(zipfile.BadZipFile):
+            f.read(10)                                   # latched, not a clean EOF

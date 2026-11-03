@@ -176,3 +176,20 @@ class TestDistinctYearsHelper:
         from infrastructure.database.queries import distinct_years
         with pytest.raises(ValueError, match="not a plain SQL identifier"):
             distinct_years(self._Session([]), table, column)
+
+
+class TestReconcileTotalReferenceSideMultiple:
+    """#1091: the #970 signature can sit on the REFERENCE side (the published total double-counts, or
+    whole component categories were dropped); the message must say which side, not 'tolerance'."""
+
+    def test_reference_twice_the_components_names_the_reference_side(self):
+        with pytest.raises(DataGuardError, match=r"the source's own total is 2\.000× the component sum"):
+            reconcile_total(12_261_274, 24_522_548, label="child count")
+
+    def test_components_twice_the_reference_still_names_the_component_side(self):
+        with pytest.raises(DataGuardError, match=r"component sum is 2\.000× the source's own total"):
+            reconcile_total(24_522_548, 12_261_274, label="child count")
+
+    def test_a_non_integer_shortfall_is_still_the_tolerance_message(self):
+        with pytest.raises(DataGuardError, match="exceeds tolerance"):
+            reconcile_total(70, 100, label="x")

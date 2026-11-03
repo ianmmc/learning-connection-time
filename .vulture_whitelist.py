@@ -46,7 +46,7 @@ effective_gate_mode  # unused function (infrastructure/acquisition/common/gate_m
 MODEL_WINDOWS_FETCHED  # unused variable (infrastructure/acquisition/common/model_families.py:64)
 data_root_is_default  # unused function (infrastructure/acquisition/common/paths.py:69)
 latest_receipt  # unused function (infrastructure/acquisition/common/receipts.py:137)
-primary_bands_for  # unused function (infrastructure/acquisition/common/school_sampling.py:206)
+primary_bands_for  # unused function (infrastructure/utilities/grade_bands.py:123 — moved by #1035; T6 #1040 consumes it)
 charter_lookup  # unused function (infrastructure/acquisition/common/school_sampling.py:796)
 tree  # unused function (infrastructure/acquisition/process_governance/server.py:178)
 save_label  # unused function (infrastructure/acquisition/process_governance/server.py:282)

@@ -228,9 +228,8 @@ def ccd_education_unit_totals(membership: pd.DataFrame, indicator: str = EDUCATI
     The ONE reader of those rows, carrying both hard-won guards: the TOTAL_INDICATOR is stripped before the
     match (stray whitespace in vintage files silently dropped every district, issue #308) and a duplicate
     LEAID keeps the first row (it would Cartesian-multiply any join on LEAID, issue #427)."""
-    totals = membership[
-        membership['TOTAL_INDICATOR'].str.strip() == indicator
-    ][list(columns)].copy()
+    mask = membership['TOTAL_INDICATOR'].str.strip() == indicator
+    totals = membership.loc[mask, list(columns)].copy()     # the 2 columns, not a 15-column copy (#1091)
     dupes = int(totals['LEAID'].duplicated().sum())
     if dupes:
         logger.warning(f"  Dropping {dupes} duplicate LEAID {indicator!r} rows (keeping first)")

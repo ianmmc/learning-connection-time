@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import ast
 import csv
+import subprocess
 import sys
 from pathlib import Path
 
@@ -542,3 +543,16 @@ class TestMassachusettsReimport:
         import infrastructure.database.migrations.import_massachusetts_data as m
         s = self._session()
         m.require_staff_rows_written(s, "2025-26", imported=395, skipped=1)   # must not raise
+
+
+# ----------------------------------------------------------------------------- generate_sea_integration --year (#1091)
+@pytest.mark.parametrize("argv, rc, needle", [
+    (["--state", "OH", "--agency", "ODE", "--dry-run"], 2, "--year is required when generating"),
+    (["--state", "OH", "--agency", "ODE", "--year", "2020-21", "--dry-run"], 2, "not a usable school year"),
+])
+def test_1091_generate_sea_integration_has_no_default_year(argv, rc, needle):
+    """The SEA export's vintage is stamped into the generated importer; NCES_PRIMARY_YEAR says nothing
+    about it, so there is no default and a COVID or malformed year is refused at the parser."""
+    r = subprocess.run([sys.executable, str(REPO / "infrastructure/scripts/utilities/generate_sea_integration.py"), *argv],
+                       capture_output=True, text=True, cwd=REPO)
+    assert r.returncode == rc and needle in r.stderr

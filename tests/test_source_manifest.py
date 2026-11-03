@@ -8,6 +8,7 @@ checked for shape: canonical serialization, every entry's URL in the download ca
 hashes. Comparing the real data/raw files to it is the drift check's job (#1042).
 """
 import json
+import os
 import re
 
 import pytest
@@ -25,7 +26,7 @@ def _manifest(tmp_path, files):
     for name, body in files.items():
         (folder / name).write_bytes(body)
         entries.append({"file": name, "bytes": len(body), "sha256": SM.sha256_file(folder / name),
-                        "url": f"https://example/{name}", "file_mtime": "2026-11-01"})
+                        "url": f"https://example/{name}"})
     return {"source": "t", "base": "raw", "years": {"2024-25": entries}}, folder
 
 
@@ -181,3 +182,36 @@ class TestTrackedManifest:
                 stem = e["url"].rsplit("/", 1)[1].removesuffix(".zip")
                 # on disk as the zip itself, or as the CSV member extracted from it
                 assert e["file"] == f"{stem}.zip" or (e["file"] == e["member"] == f"{stem}.csv"), e
+
+
+# ----------------------------------------------------------------------------- #1089: stable, one folder rule
+def test_the_manifest_records_nothing_machine_dependent(raw_tree):
+    """A re-copy (new mtime, same bytes) must not change the tracked JSON."""
+    m1, _ = GEN.build(raw_tree)
+    for p in raw_tree.rglob("ccd_*"):
+        os.utime(p, (0, 0))
+    m2, _ = GEN.build(raw_tree)
+    assert SM.dump(m1) == SM.dump(m2)
+    assert not any("file_mtime" in e for es in m1["years"].values() for e in es)
+
+
+def test_base_dir_follows_lct_data_root_unless_a_root_is_given(monkeypatch, tmp_path):
+    monkeypatch.delenv("LCT_DATA_ROOT", raising=False)
+    assert SM.base_dir("data/raw/federal/nces-ccd") == SM.REPO / "data/raw/federal/nces-ccd"
+    monkeypatch.setenv("LCT_DATA_ROOT", str(tmp_path / "elsewhere"))
+    assert SM.base_dir("data/raw/federal/nces-ccd") == tmp_path / "elsewhere" / "raw/federal/nces-ccd"
+    assert SM.base_dir("config/x") == SM.REPO / "config/x"                 # only the data tree relocates
+    assert SM.base_dir("data/raw/t", root=tmp_path) == tmp_path / "data/raw/t"
+    assert SM.year_folder({"base": "data/raw/t"}, "2024-25") == tmp_path / "elsewhere" / "raw/t" / "2024_25"
+
+
+def test_verify_finds_a_relocated_data_tree(monkeypatch, tmp_path):
+    folder = tmp_path / "moved" / "raw" / "t" / "2024_25"
+    folder.mkdir(parents=True)
+    (folder / "a.csv").write_bytes(b"x" * 10)
+    m = {"source": "t", "base": "data/raw/t", "years": {"2024-25": [
+        {"file": "a.csv", "bytes": 10, "sha256": SM.sha256_file(folder / "a.csv"), "url": "u"}]}}
+    monkeypatch.setenv("LCT_DATA_ROOT", str(tmp_path / "moved"))
+    assert SM.verify(m)["checked"] == ["2024-25/a.csv"]
+    monkeypatch.delenv("LCT_DATA_ROOT")
+    assert SM.verify(m)["absent"] == ["2024-25/a.csv"]

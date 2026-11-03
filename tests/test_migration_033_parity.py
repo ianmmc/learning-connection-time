@@ -27,8 +27,10 @@ from sqlalchemy.exc import OperationalError
 pytestmark = [pytest.mark.govdb, pytest.mark.integration]
 
 TABLES = ("ccd_school_staffing", "lea_school_staffing", "lea_band_staffing", "lea_grade_teacher_fte")
-MIGRATION = (Path(__file__).resolve().parents[1]
-             / "infrastructure/database/migrations/033_ccd_school_staffing.sql")
+_MIGRATIONS_DIR = Path(__file__).resolve().parents[1] / "infrastructure/database/migrations"
+MIGRATION = _MIGRATIONS_DIR / "033_ccd_school_staffing.sql"
+# Every migration that shapes these four tables, in order; 034 (#1088) adds the grade-token CHECKs.
+MIGRATIONS = (MIGRATION, _MIGRATIONS_DIR / "034_lea_band_staffing_grade_tokens.sql")
 
 
 def _shape(conn, schema: str) -> dict:
@@ -95,7 +97,8 @@ def scratch_schemas():
 
 
 def _apply_migration(conn):
-    conn.exec_driver_sql(MIGRATION.read_text())
+    for path in MIGRATIONS:
+        conn.exec_driver_sql(path.read_text())
     conn.commit()
 
 
@@ -118,6 +121,7 @@ def test_migration_033_and_models_declare_the_same_tables(scratch_schemas):
     assert any(k[2] == "c" for k in a["constraints"]), "no CHECK constraint compared"
     assert any(k[2] == "p" for k in a["constraints"]), "no PRIMARY KEY compared"
     assert any("idx_ccd_school_staffing_lea" == i[1] for i in a["indexes"]), "the leaid index was not compared"
+    assert {k[1] for k in a["constraints"]} >= {"chk_lbs_grade_lo", "chk_lbs_grade_hi"}, "034's CHECKs were not compared"
     assert sum(1 for c in a["comments"] if c[1]) == 2, "the two table comments were not compared"
 
 
