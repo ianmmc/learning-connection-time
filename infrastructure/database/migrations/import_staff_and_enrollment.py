@@ -28,7 +28,7 @@ sys.path.insert(0, str(project_root))
 
 from infrastructure.database.connection import session_scope, get_engine
 from infrastructure.utilities.common import ccd_education_unit_totals
-from infrastructure.utilities.data_guards import reconcile_total
+from infrastructure.utilities.data_guards import reconcile_total, require_match_coverage
 from infrastructure.utilities.school_year import NCES_PRIMARY_YEAR
 from infrastructure.database.models import (
     District,
@@ -97,15 +97,6 @@ GRADE_MAPPING = {
 }
 
 
-# Minimum fraction of our districts a source-year file must match after LEAID
-# normalization. A source year's CCD file covers ~all of our districts (they ARE
-# derived from the CCD universe), and legitimate year-over-year churn (closed/merged
-# districts absent from the newer file) is ~0.5%. A match rate below this floor means a
-# LEAID-format regression silently dropped a whole population — abort rather than commit a
-# partial import (issue #611: str(int(leaid)) stripped the leading zero, unmatching every
-# FIPS<10 state after migration 015 canonicalized the districts table to 7-digit IDs).
-MATCH_COVERAGE_FLOOR = 0.95
-
 # G1 row-wise cap: Σ mapped grades reconciles EXACTLY with the file's own 'Education Unit Total' on
 # both on-disk vintages (0 of 18,499 / 18,507 LEAs). A non-zero count is a dropped or relabeled grade
 # category, which the aggregate tolerance cannot see (#976) — so the cap is zero, not "small".
@@ -125,20 +116,6 @@ def _canonical_leaid(x) -> str:
         return x
     s = str(x).strip()
     return s.zfill(7) if s else s
-
-
-def _assert_match_coverage(n_file_districts: int, n_matched: int, n_existing: int, label: str) -> None:
-    """Fail loud if the normalized source file matched implausibly few of our districts — the
-    silent-partial-import guard (issue #611). The denominator is min(file districts, our
-    districts): a year's file should match nearly all of whichever set is smaller."""
-    denom = min(n_file_districts, n_existing)
-    if denom and n_matched < denom * MATCH_COVERAGE_FLOOR:
-        raise SystemExit(
-            f"{label}: only {n_matched:,} of {denom:,} districts matched "
-            f"({100 * n_matched / denom:.1f}%), below the {MATCH_COVERAGE_FLOOR:.0%} floor. "
-            f"This usually means a LEAID-format regression (e.g. leading zeros stripped, "
-            f"issue #611) silently dropping a whole population. Aborting before a partial import."
-        )
 
 
 def load_staff_data(staff_file: Path, year: str) -> pd.DataFrame:
@@ -302,8 +279,8 @@ def import_staff_counts(staff_df: pd.DataFrame, session) -> int:
     n_file_districts = staff_df["district_id"].nunique()
     staff_df = staff_df[staff_df["district_id"].isin(existing_districts)]
     print(f"  {len(staff_df):,} districts match existing records")
-    _assert_match_coverage(n_file_districts, staff_df["district_id"].nunique(),
-                           len(existing_districts), "staff import")
+    require_match_coverage(n_file_districts, staff_df["district_id"].nunique(),
+                           len(existing_districts), label="staff import")
 
     imported = 0
     batch_size = 1000
@@ -376,8 +353,8 @@ def import_enrollment_data(enrollment_df: pd.DataFrame, session) -> int:
     n_file_districts = enrollment_df["district_id"].nunique()
     enrollment_df = enrollment_df[enrollment_df["district_id"].isin(existing_districts)]
     print(f"  {len(enrollment_df):,} districts match existing records")
-    _assert_match_coverage(n_file_districts, enrollment_df["district_id"].nunique(),
-                           len(existing_districts), "enrollment import")
+    require_match_coverage(n_file_districts, enrollment_df["district_id"].nunique(),
+                           len(existing_districts), label="enrollment import")
 
     imported = 0
     batch_size = 1000

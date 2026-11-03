@@ -151,8 +151,8 @@ Last verified 2026-10-29 (post-merge of the #931→#942 stack): CI run `40931091
 differ for environmental reasons, so the figure that must agree is the TOTAL (passed + skipped).
 
 ```bash
-pytest -q -m "not integration"    # local 2026-11-01 (main @ cb35e9f, after #1024): 2832 passed, 1 skipped (total 2833). CI last verified at 9cfa49f: 2555 + 6 skipped (total 2561) — re-verify CI
-pytest -q -m govdb                # CI job `governance-db`: 381 passed, 29 skipped · local (Docker, both DBs): 410 passed, 0 skipped (total 410)
+pytest -q -m "not integration"    # local 2026-11-03 (feat/1039 after the #1068 review fixes): 2974 passed, 1 skipped (total 2975). CI last verified at 9cfa49f: 2555 + 6 skipped (total 2561) — re-verify CI
+pytest -q -m govdb                # CI job `governance-db`: 381 passed, 29 skipped · local (Docker, both DBs): 415 passed, 0 skipped (total 415)
 pytest tests/test_*_integration.py  # expect 256 pass, 149 skipped, 1 FAIL until #938 refreshes MODEL_WINDOWS (network test, catalog drift)
 cd infrastructure/scraper && npm test   # Node capture layer — expect 106 (CI job `node-tests`: 106 pass)
 lint-imports                      # layering contracts — expect "5 kept, 0 broken" (5th: Stage 4 holds no path to the network, #950)

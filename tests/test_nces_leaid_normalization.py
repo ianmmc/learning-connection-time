@@ -12,10 +12,8 @@ must abort the import loudly.
 """
 import pytest
 
-from infrastructure.database.migrations.import_staff_and_enrollment import (
-    _assert_match_coverage,
-    _canonical_leaid,
-)
+from infrastructure.database.migrations.import_staff_and_enrollment import _canonical_leaid
+from infrastructure.utilities.data_guards import require_match_coverage
 
 
 class TestCanonicalLeaid:
@@ -51,19 +49,19 @@ class TestCanonicalLeaid:
 class TestMatchCoverageGuardrail:
     def test_passes_at_full_coverage(self):
         # 17,751 of 17,842 matched (99.5%) — the corrected 2024-25 ingest. No raise.
-        _assert_match_coverage(n_file_districts=18548, n_matched=17751, n_existing=17842,
+        require_match_coverage(n_file_districts=18548, n_matched=17751, n_existing=17842,
                                label="enrollment import")
 
     def test_raises_on_the_611_partial_import(self):
         # 14,717 of 17,842 (82.5%) — the buggy 2024-25 ingest. Must abort, not silently commit.
         with pytest.raises(SystemExit, match="issue #611"):
-            _assert_match_coverage(n_file_districts=18548, n_matched=14717, n_existing=17842,
+            require_match_coverage(n_file_districts=18548, n_matched=14717, n_existing=17842,
                                    label="enrollment import")
 
     def test_denominator_is_the_smaller_of_file_or_table(self):
         # Small partial file (say a single-state test extract) must not trip the floor: denom follows
         # the file, so matching all 500 of 500 file districts passes even against a 17k table.
-        _assert_match_coverage(n_file_districts=500, n_matched=500, n_existing=17842, label="staff import")
+        require_match_coverage(n_file_districts=500, n_matched=500, n_existing=17842, label="staff import")
 
     def test_empty_denominator_never_raises(self):
-        _assert_match_coverage(n_file_districts=0, n_matched=0, n_existing=17842, label="staff import")
+        require_match_coverage(n_file_districts=0, n_matched=0, n_existing=17842, label="staff import")

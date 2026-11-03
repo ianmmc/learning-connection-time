@@ -39,6 +39,7 @@ TRUNCATION_ORDER = [
     "calculation_runs",
 
     # Layer 2: Enrichment system
+    "district_grade_minutes",
     "bell_schedules",
     "enrichment_attempts",
     "enrichment_queue",
@@ -51,6 +52,13 @@ TRUNCATION_ORDER = [
     "staff_counts_effective",
     "staff_counts",
     "enrollment_by_grade",
+
+    # Layer 2: CCD school files + the derived band staffing (no FK to districts: the CCD carries
+    # LEAs the districts table does not — so nothing cascades them; listed explicitly, #1077)
+    "lea_grade_teacher_fte",
+    "lea_band_staffing",
+    "lea_school_staffing",
+    "ccd_school_staffing",
 
     # Layer 2: California-specific
     "ca_sped_district_environments",
