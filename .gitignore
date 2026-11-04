@@ -196,3 +196,6 @@ data/acquisition/remediation/**/district_status.json
 .hypothesis/
 mutants/
 .mutmut-cache
+
+# Primary-source binaries downloaded for research stay local; their excerpts + sha256 are tracked (#1111)
+docs/research/*.docx
