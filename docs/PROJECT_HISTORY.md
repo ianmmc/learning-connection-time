@@ -2685,3 +2685,41 @@ so that CCD and CRDC are the same year (`2026-11-01-band-scope-decisions-measure
 
 Authority: #1022 (D1–D8 comments), #1040, #1041, #1046; PR #1034; `2026-11-01-school-file-band-scopes-plan.md`
 (+ `2026-11-01-band-scope-decisions-measure.py`), its Revised Design block and "GenEd band variants"; CRDC 2023-24 School Form Table Layout (STAF-2).
+
+### 2026-11-03/04 — Pre-K teachers where the school files carry no Pre-K students: subtract by default, and believe "outside" only when two years agree
+
+**Why.** D3 (entry above) allocates a district's reported Pre-K teacher FTE across its schools by Pre-K
+membership. Loading the school files (#1039) showed Michigan has none: NCES documents that Michigan has
+reported Pre-K only at the LEA/SEA level since at least 2018-19. The PR #1095/#1096 review then showed the
+gap is not Michigan's alone. 2024-25 has 767 such key-less LCT-eligible districts, 354 of them in other
+states.
+
+**What the sources settle.** Under the EDFacts FS059 rule a school's teacher FTE includes its Pre-K
+teachers. Michigan's own notes explain why many districts' school sums fall short anyway (LEA-level
+reporting, reportable programs, shared schools). So whether a key-less district's Pre-K teachers sit
+inside its school counts is a per-district fact to measure, not a state property.
+
+**Decision (Ian 2026-11-03; revised 2026-11-04 after review, revisions awaiting his confirmation).** Pre-K
+students are dropped, as everywhere. A key-less district's Pre-K FTE is subtracted from its PK-offering
+schools (else its elementary-band schools), in proportion to their teacher FTE, before the grade split.
+The exception is a district whose school sum equals its LEA total minus Pre-K, within 0.1%, in BOTH the
+derived vintage and the previous one. If the Pre-K FTE exceeds the host schools' FTE, nothing is clipped:
+the elementary band is unpublished and flagged. Rejected: subtracting everywhere (it undercounts where
+Pre-K is outside), and ignoring Pre-K teachers (it overstates the elementary band by ~7–10% where they
+are inside).
+
+**Lessons.**
+- **A tolerance is a measurement.** ±1% looked harmless and more than tripled the "outside" class.
+  Calibrating on districts where the answer is known by rule showed that matches, when real, are exact.
+- **A rare match needs a null.** Single-year "outside" matches were about one-third coincidence (63
+  observed, permutation null mean 23). Agreement in two vintages was not (27 against a null mean of 1.9).
+  The base rate that matters is the rate among districts where the coincidence CAN happen: 4.4% of
+  districts with a school shortfall, not 1.25% of all districts.
+- **State the universe once, in the script.** The first Michigan sizing drifted on three things at once:
+  the `'NaN'` placeholder that `> 0` selects, shared-service LEAs that never publish, and a division by
+  zero that silently dropped a district. `2026-11-04-keyless-prek-measure.py` states all three in its
+  docstring.
+
+Authority: #1040, #1070, #1097–#1111; PRs #1095, #1096; plan note "Pre-K without a school key"
+(+ `2026-11-04-keyless-prek-measure.py`); NCES CCD data notes 2018-19 / 2023-24 / 2024-25;
+`docs/research/edfacts-fs059-excerpts.md`.

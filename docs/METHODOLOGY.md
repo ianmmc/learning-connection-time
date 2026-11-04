@@ -1067,26 +1067,27 @@ reported for the LEA and SEA levels, they are not reported at the building level
 state notes say the same, so the pattern is long-standing.
 
 - **In the data.** The LEA file has 53,882 Michigan Pre-K students in 2024-25 (48,993 in 2023-24). The
-  school file has none: about 1,110 Pre-K cells per year are 'Manual adjustment' zeros. `ccd_school_staffing`
-  stores them as NULL with the flag kept in `membership_flags` (#1070). They mean "not reported at this
-  level", never "no Pre-K".
-- **Pre-K teachers are real and separate.** The LEA file reports 2,980 Pre-K and 5,137 kindergarten
-  teacher FTE separately (2024-25). 53,882 / 2,980 = 18.1 students per FTE, which matches the state Great
-  Start Readiness Program's class of 18 with one lead teacher. They are not blended Pre-K/K teachers.
-- **They are placed in school counts inconsistently.** Federal rule (EDFacts FS059, SY 2023-24 to
-  2025-26) is that a school's teacher FTE includes its Pre-K teachers. Michigan lets districts report FTE
-  at the district level instead of prorating it, and its Pre-K-only buildings are "reportable programs",
-  which are absent from the school directory. So in some districts the Pre-K teachers are inside the
-  school totals and in others they are not.
+  school file has none. About 1,110 Pre-K cells per year are 'Manual adjustment' zeros, which
+  `ccd_school_staffing` stores as NULL with the flag kept in `membership_flags` (#1070); they mean "not
+  reported at this level". A further 33 Pre-K cells in 2024-25 (31 in 2023-24) are flagged 'Reported'
+  with a value of 0 and are stored as 0, including all 11 of Michigan's Pre-K-level schools in the
+  directory. Read every Michigan school Pre-K value as unreported, whatever its flag.
+- **Pre-K teachers are reported, but placed in school counts inconsistently.** The LEA file reports 2,980
+  Michigan Pre-K teacher FTE (2024-25). The federal rule (EDFacts FS059, SY 2023-24 to 2025-26) is that a
+  school's teacher FTE includes its Pre-K teachers. Michigan, though, lets districts report FTE at the
+  district level instead of prorating it to schools. Twelve Pre-K-only buildings new in 2024-25 are
+  "reportable programs", which are absent from the school directory, so their teachers exist only at the
+  district level. The 11 Pre-K-level schools that are in the directory carry 62.65 teacher FTE in their
+  school counts.
+- **Not only Michigan.** The same gap, district Pre-K teachers but no Pre-K students in any of the district's
+  school rows, occurs in about 350 districts in other states (2024-25).
 - **Current results are unaffected.** Every scope in `lct_calculations` is built from LEA-level staffing,
   where Pre-K teachers are a separate, reported count, and all scopes exclude them.
-- **Where it will matter.** The school-file band scopes (#1022, not yet computed) need Pre-K teachers out
-  of each school's total, and Michigan gives no school-level key for that. The decided treatment is to
-  subtract the district's Pre-K FTE from its elementary band, unless the district's school total equals
-  its LEA total minus Pre-K (to within 0.1%, the tolerance calibrated on the other states). It is recorded,
-  with its measurements, in
-  `docs/technical-notes/production-quality-control-research/2026-11-01-school-file-band-scopes-plan.md`
-  ("Michigan Pre-K"). Sources: `docs/research/` (the research summary and the three FS059 specs).
+- **Where it will matter.** The school-file band scopes (#1022, not yet computed) must take Pre-K teachers
+  out of school totals. How they handle a district with no school-level Pre-K key is the plan note's
+  "Pre-K without a school key" (`docs/technical-notes/production-quality-control-research/2026-11-01-school-file-band-scopes-plan.md`);
+  it enters this document when those scopes are adopted (T10). Sources: `docs/research/` (the deep-research
+  export and `edfacts-fs059-excerpts.md`).
 
 ---
 

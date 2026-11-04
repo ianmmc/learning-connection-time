@@ -48,9 +48,8 @@ that produces them is stored in `lct_db`, visible and checkable line by line.
 >   - A district with Pre-K students and a reported Pre-K FTE of 0 has nothing subtracted and is flagged
 >     (1,207 LEAs in 2023-24).
 >   - Pro-rata is rejected: it overstates Pre-K teachers by 40% (M2).
->   - **Michigan is the exception (decided 2026-11-03, Ian):** its school files carry no Pre-K
->     membership, so the subtraction is made from the district's elementary band directly. See
->     "Michigan Pre-K" below.
+>   - **A district whose school rows carry no Pre-K membership (Michigan, and 354 districts elsewhere)
+>     has no allocation key.** It takes the fallback in "Pre-K without a school key" below.
 > - **Formula:** for band B, over the district's reporting schools in B (plus the B-grades of its
 >   combined schools):
 >   `LCT_B = minutes_B × Σ(teachers − allocated Pre-K FTE) / Σ(membership − Pre-K membership)`.
@@ -278,79 +277,100 @@ The GenEd result is therefore driven mostly by which students leave the denomina
 source is used. T11 computes the hybrid alongside today's student-based key on the same rows and reports
 both before adoption.
 
-## Michigan Pre-K — the D3 exception (decided 2026-11-03, Ian; #1040, #1070)
+## Pre-K without a school key — the D3 fallback (Michigan and elsewhere; #1040, #1070, review #1097-#1111)
 
-**The gap.** Michigan's school membership file (052) has no Pre-K students: about 1,110 Pre-K cells per year
-are 'Manual adjustment' zeros, stored NULL since #1070, and even its Pre-K-level schools report 0. The LEA
-file reports 53,882 Pre-K students in 305 districts (2024-25; 48,993 in 2023-24), flagged 'Reported'. D3
-allocates the LEA-reported Pre-K FTE across a district's schools by Pre-K membership, so in Michigan it has
-no allocation key.
+**The gap.** D3 allocates a district's LEA-reported Pre-K FTE across its schools by Pre-K membership. A
+district is **key-less** when it has real Pre-K FTE but its school rows carry no Pre-K membership (Σ
+`memb_pk` NULL or 0), so that allocation is 0/0. Michigan is the large case: NCES documents that it never
+reports Pre-K at the school level. But the trigger is not Michigan-specific (#1102): 2024-25 has 767
+key-less LCT-eligible districts, 413 in Michigan (2,270.5 Pre-K FTE) and 354 elsewhere (1,270.1; PA 51,
+OR 43, MO 40, SD 28, NJ 25, MN 20, WA 20, CT 17).
 
-**What the sources say** (checked against the primary files, not the research summary). Research:
-`docs/research/I need to understand how Michigan reports prekinde.md` (Perplexity Deep Research, Ian).
-- NCES's CCD Membership Metadata for Michigan, identical in 2023-24 and 2024-25: *"Membership counts for
+**Measured by** `2026-11-04-keyless-prek-measure.py` (this folder; read-only, LCT DB). Every number in this
+section comes from it. **Universe** (the first sizing drifted on each of these): LEA Pre-K FTE is a real number,
+not the `'NaN'` placeholder, which `teachers_prek > 0` selects (#1098). The district is LCT-eligible, not
+`is_shared_service_entity`, since ISDs, RESAs and CTCs never publish (#1097). The district has school
+rows.
+
+**What the sources say** (checked against the primary files).
+- NCES CCD Membership Metadata for Michigan, identical in 2023-24 and 2024-25: *"Membership counts for
   pre-K are reported for the LEA and SEA levels, they are not reported at the building level."* The
-  2018-19 state notes say the same (*"Michigan does not collect prekindergarten data at the school
-  level"*), so this is long-standing. Source: `nces.ed.gov/ccd/xls/SY_2023-24_Final_1a_Data_Notes.xlsx`,
+  2018-19 state notes say the same, so this is long-standing. Sources: `nces.ed.gov/ccd/xls/SY_2023-24_Final_1a_Data_Notes.xlsx`,
   `SY_2024-25_CCD_Final_2a_Data_Notes.xlsx`, `SY1819_Membership_Staff_SpecialPopulations_DataNotes.xlsx`.
-- The EDFacts FS059 spec, the same in the SY 2023-24, 2024-25 and 2025-26 versions
-  (`docs/research/fs059-20-3.docx`, `fs059-21-0-110182.docx`, `edfacts-…-fs059-22-0-…docx`): Pre-K
-  teachers reported at the SEA/LEA level *"should also be reported at the school level"* (DG644). So by
-  rule, school teacher FTE includes Pre-K teachers. Reportable programs are excluded from the school
-  level, and Michigan's 12 new Pre-K-only buildings in 2024-25 are reportable programs (DGO-0033). They
-  are absent from the 029 directory.
-- Michigan's own note on school sums below the LEA total (2023-24, CCD-0045, 134 LEAs): LEAs may report
-  FTE at the LEA level instead of prorating it; reportable-program teachers stay at the LEA level; and
-  shared-school staff can't be placed at a school.
-- The teachers are not blended Pre-K/K. The LEA file reports 2,980 Pre-K and 5,137 kindergarten teacher
-  FTE separately (2024-25), and 53,882 / 2,980 = 18.1 students per Pre-K FTE, which is GSRP's class of 18
-  with one lead teacher.
+- EDFacts FS059 (identical in SY 2023-24, 2024-25 and 2025-26; excerpts and sha256s in
+  `docs/research/edfacts-fs059-excerpts.md`): Pre-K teachers reported at the SEA/LEA level *"should also be
+  reported at the school level"* (DG644), so by rule school FTE includes them. Reportable programs are
+  excluded from the school level.
+- Michigan's own explanation of school sums below the LEA total (2023-24, CCD-0045, 134 LEAs): LEAs may
+  report FTE at the LEA level instead of prorating it; reportable-program teachers stay at the LEA level;
+  shared-school staff cannot be placed at a school.
+- Michigan's school files: 12 Pre-K-only buildings that are new in 2024-25 are reportable programs and are
+  absent from the 029 directory (DGO-0033). A further 11 Pre-K-level schools (Special Education Schools)
+  ARE in the directory, with 62.65 teacher FTE in 2024-25 and 93.22 in 2023-24, and report Pre-K
+  membership as a *'Reported'* 0. Michigan carries 33 such 'Reported' Pre-K zeros in 2024-25 and 31 in
+  2023-24, stored as 0, beside the 1,110 'Manual adjustment' zeros stored NULL (#1070).
+- **Not established:** whether Michigan's Pre-K teachers also teach kindergarten. FS059 splits a blended
+  teacher's FTE between PKTCH and KGTCH, so separate totals cannot show it. The research export lists it
+  as unresolved (#1105). The decision below does not depend on it.
 
-**Decision (Ian, option 1 of 3).** Pre-K students are dropped, as everywhere. The district's LEA-reported
-Pre-K FTE is subtracted from its **elementary band** directly (bands are published per district, and
-Michigan's Pre-K sits in elementary-band schools), **except** where the district's own numbers show the
-Pre-K teachers are outside the school counts: Σ school teachers = LEA teachers − LEA Pre-K teachers.
-Where that test is not met, the federal default holds (Pre-K is inside) and the FTE is subtracted.
-Rejected alternatives: subtracting everywhere (it undercounts teachers where Pre-K is outside), and
-ignoring Pre-K teachers (it overstates Michigan's elementary band by about 7–10%: Pre-K FTE is 9.8% of the
-same districts' Elementary-level school FTE).
+**Measurements (2024-25 unless noted).**
+- **Calibration where Pre-K is inside by rule** (districts WITH a school Pre-K key, LCT-eligible, ≥5
+  teachers, n = 8,433): |Σ school / LEA total − 1| has a p50 of 0.00%, a p90 of 2.39% and a p95 of 4.73%;
+  70.2% fall within 0.1%. Chance "outside" matches: 1.25% of all, but **4.4% (105 of 2,392) of districts
+  with a school shortfall**. A shortfall district is exactly where an "outside" match can occur (#1101).
+- **Placement classes, key-less districts, 0.1%, inside tested first (#1100):**
 
-**Measurement — the match tolerance (2024-25 unless noted).**
-- **Calibration.** Outside Michigan, Pre-K is inside the school counts by rule. In the 11,963 such
-  districts with Pre-K FTE and ≥5 teachers, |Σ school / LEA total − 1| has a median of 0.00%, a p90 of
-  1.94% and a p95 of 4.20%. 76.1% match within 0.1%, and only 1.03% match "total − Pre-K" within 0.1% by
-  chance. A match is exact when it holds; loose tolerances capture noise.
-- **Michigan, by tolerance** (466 LEAs with Pre-K FTE > 0):
-
-  | tolerance | inside | outside | Pre-K FTE outside | neither |
+  | vintage | districts | inside (FTE) | outside (FTE) | neither (FTE) |
   |---|---|---|---|---|
-  | 0.1% | 157 | 33 | 172 | 276 |
-  | 0.5% | 187 | 65 | 429 | 214 |
-  | 1% | 208 | 92 | 656 | 166 |
-  | 2% | 230 | 125 | 880 | 111 |
+  | 2023-24 | 791 | 395 (834.2) | 59 (149.7) | 337 (2,238.0) |
+  | 2024-25 | 767 | 363 (871.7) | 63 (234.4) | 341 (2,434.4) |
 
-  2023-24 has the same shape: 138 / 35 / 102 FTE / 273 at 0.1%. The ±1% used in the first sizing more
-  than triples the outside FTE that the 0.1% calibration supports.
-- **Stability at 0.1%:** 107 districts are inside in both years and 17 outside in both years. 14 + 12
-  move between outside and neither.
-- **The "neither" districts** (276, holding 2,410 of Michigan's 2,980 Pre-K FTE) all have a school sum
-  below the LEA total. In 146 of them (1,186 Pre-K FTE) the shortfall is at least the Pre-K FTE, so their
-  Pre-K teachers may already be outside the school counts. The data bound the Pre-K FTE inside a
-  district's school counts to `[max(0, pk − gap), pk]`, with `gap = LEA total − Σ school`. Summed over
-  the neither districts, the bound width is 1,766 FTE.
+  One 2024-25 district's LEA total is all Pre-K (Bois Blanc Pines, 2606300). For it "outside" is
+  undefined, so it is inside or neither, never a division by zero.
+- **Single-year "outside" is about one-third coincidence.** A permutation null (Pre-K FTE shuffled across
+  the key-less districts, 2,000 draws; each keeps its own total and school sum) gives a mean of 23.0
+  outside matches in 2024-25 (p95 30) against 63 observed, and 21.6 in 2023-24 (p95 29) against 59.
+- **Two-year agreement is not.** Of 588 key-less districts present in both vintages, **27 are outside in
+  both**. The null for agreement in both years has a mean of 1.86, a p95 of 4 and a max of 7. Transitions:
+  inside→inside 219, neither→neither 261, outside→outside 27, and 101 districts change class.
+- **Feasibility (#1097).** Subtracting from host schools before the grade split (rule 4 below), the Pre-K
+  FTE exceeds the hosts' whole teacher FTE in 6 districts (49.9 Pre-K FTE): CT 0901260 23.00 vs 21.20, MI
+  2628740 21.00 vs 8.60, SD 4600052 3.00 vs 1.00, MI 2623910 1.40 vs 1.00, and two NJ districts with
+  hosts reporting no FTE. Hosts are PK-offering schools in 524 districts, elementary-band schools in 241,
+  and none in 2.
+- **Bounds for the neither districts:** 341 districts and 2,434.4 Pre-K FTE. The bound width
+  Σ min(pk, gap) is 1,667.6. In 187 of them (1,156.8 FTE) the shortfall is at least the Pre-K FTE.
+- **The D3 flag's students (#1103):** 29 Michigan districts report 12,167 Pre-K students in the LEA file
+  and Pre-K FTE exactly 0.
 
-**Decided 2026-11-03 (Ian accepted both proposals):**
-1. **Match tolerance 0.1%** (the calibrated exact-match mode), not ±1%. A district is "Pre-K outside"
-   when |Σ school / (LEA total − LEA Pre-K) − 1| ≤ 0.1% and that is the closer of the two hypotheses.
-   At 2024-25 that is 33 districts and 172 Pre-K FTE.
-2. **Neither districts take the default subtraction, with both bounds stored.** The full LEA Pre-K FTE
-   is subtracted from the elementary band (the federal default). `lea_school_staffing` also stores the
-   lower bound `max(0, pk − gap)`, so T9's before/after shows how much those districts' elementary bands
-   move. Whether a neither district's elementary band publishes is decided at T9 adoption, alongside
-   D4's coverage floor.
-
-Rerun: the queries are in the #1040 comments (2026-11-03). T6 turns them into the derivation's own
-rerunnable measure script.
+**Decision.** Option 1 (Ian, 2026-11-03) is to subtract unless the district's numbers show Pre-K outside the
+school counts, with a 0.1% tolerance and the default subtraction plus stored bounds for the neither
+districts. Rejected: subtracting everywhere, and ignoring Pre-K teachers. **Revised 2026-11-04 after the
+#1095/#1096 review. Rules R1, R3, R4, R5 and R7 are CHANGES and await Ian's confirmation; R2 and R6 are
+corrections.**
+- **R1 — trigger (#1102).** The fallback applies to every key-less district, in any state. There is no
+  state gate.
+- **R2 — universe (#1097, #1098).** Real Pre-K FTE (not `'NaN'`), LCT-eligible districts.
+- **R3 — placement test (#1100, #1101).** Inside first at 0.1%. A district is **outside** only when it is
+  outside (0.1%, LEA total − Pre-K > 0) in BOTH the vintage being derived and the previous on-disk vintage.
+  Every other district takes the default subtraction. At 2024-25 that is 27 districts, against 63 on one
+  year alone.
+- **R4 — where the subtraction lands (#1097).** At the school level, BEFORE the grade split: across the
+  district's schools whose span starts at PK (`gslo = 'PK'`), else across its elementary-band schools,
+  in proportion to their teacher FTE. A combined PK-12 school therefore loses its Pre-K FTE from the
+  school total rather than from its elementary slice (the Engadine case).
+- **R5 — feasibility (#1097).** If the district's Pre-K FTE exceeds the hosts' total teacher FTE, nothing is
+  clipped. The district's elementary band is unpublished and flagged `pk_exceeds_hosts` (6 districts in
+  2024-25). Proportional allocation then cannot exceed any single host.
+- **R6 — bounds are derived, not stored (#1103).** The lower bound is
+  `GREATEST(0, pk_teachers_reported − unattributed_fte)` on existing `lea_school_staffing` columns. T9's
+  before/after reports the neither districts' elementary bands at both bounds. Whether they publish is
+  decided at T9, with D4's coverage floor.
+- **R7 — T6's schema change, migration 035 (#1103).** `lea_school_staffing.pk_membership` becomes
+  nullable (NULL for a key-less district, never a fabricated 0; #1070). A new `lea_pk_membership` holds
+  the LEA-file Pre-K count, which `pk_zero_with_students` reads, so the 29 Michigan districts are
+  flagged. Both are declared in migration and model (the PR #641 invariant). T7's `chk_staff_scope`
+  migration becomes 036.
 
 ## Roadmap (each a sub-issue of #1022)
 
@@ -362,7 +382,7 @@ rerunnable measure script.
 | T4 | Migration 033 + model: `ccd_school_staffing`, `lea_grade_teacher_fte` | — | no |
 | T5 | Importer `import_ccd_school_staffing.py` (verbatim, guards), wired into the CCD import, rebuild phase list and `verify_table_counts` | T2, T4 (T3 for 2023-24) | no |
 | T6 | Derivation into `lea_grade_teacher_fte` (one function, `method_version`) | T1, T5 | D3, D4, D5 — decided |
-| T7 | The three scopes (`teachers_band_*`): migration 034 (`chk_staff_scope`), calc, scope registry, reports/QA, REQ-008 amended | T6 | D1, D2 — decided |
+| T7 | The three scopes (`teachers_band_*`): migration 036 (`chk_staff_scope`; 034 is #1088, 035 is T6's Pre-K columns), calc, scope registry, reports/QA, REQ-008 amended | T6 | D1, D2 — decided |
 | T8 | Drift checks: DB-free sha-vs-manifest test; integration test (stored sha + SQL recompute + full re-derivation); pre-commit wiring | T5, T6 | D7 — decided |
 | T9 | Read-only before/after measurement → **stop for Ian's adoption call** | T7, T8 | — |
 | T10 | Adopt: restore-verified `pg_dump`, scratch rehearsal, live migrations + import + recompute, row diff; METHODOLOGY / DATA_SOURCES / DATABASE_SETUP; REQ-190 | T9 + Ian | adoption |

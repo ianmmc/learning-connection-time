@@ -1,3 +1,10 @@
+> **Status: RESEARCH PROVENANCE — a raw Perplexity Deep Research export (Ian, 2026-11-03). NOT the design and
+> NOT verified as a whole.** Only the claims restated in the plan note
+> (`docs/technical-notes/production-quality-control-research/2026-11-01-school-file-band-scopes-plan.md`,
+> "Pre-K without a school key") were checked against the primary files: the NCES data-notes workbooks for
+> 2018-19, 2023-24 and 2024-25, and the FS059 specs (`edfacts-fs059-excerpts.md`). Everything else here is
+> unverified. Section E's blending question is unresolved, and the plan note does not rely on it (#1105, #1111).
+
 <img src="https://r2cdn.perplexity.ai/pplx-full-logo-primary-dark%402x.png" style="height:64px;margin-right:32px"/>
 
 # I need to understand how Michigan reports prekindergarten (Pre-K) students and Pre-K teachers to the
