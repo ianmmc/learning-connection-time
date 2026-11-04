@@ -3,7 +3,7 @@ columns by header name (the 2023-24 pin left website_url a vintage behind the sa
 positional indices would silently read the wrong field on a layout shift).
 
 HERMETIC on purpose: data/raw/ is gitignored, so CI has no CCD file — every test here builds its
-own vintage dir/CSV under tmp_path and repoints the module's `project_root`. (The first version of
+own vintage dir/CSV under tmp_path and points LCT_DATA_ROOT at it (the one CCD folder resolver, #1099). (The first version of
 this file opened the real corpus CSV and failed CI collection — the exact fragility it now avoids.)
 """
 import pytest
@@ -23,14 +23,14 @@ def _vintage(tmp_path, year_dir, filenames):
 def test_ccd_file_follows_the_primary_vintage(tmp_path, monkeypatch):
     # the single vintage authority: bumping NCES_PRIMARY_YEAR re-points this import automatically
     vdir = _vintage(tmp_path, NCES_PRIMARY_YEAR.replace("-", "_"), ["ccd_lea_029_test_w_1a.csv"])
-    monkeypatch.setattr(IDU, "project_root", tmp_path)
+    monkeypatch.setenv("LCT_DATA_ROOT", str(tmp_path / "data"))
     assert IDU.nces_ccd_lea_file() == vdir / "ccd_lea_029_test_w_1a.csv"
 
 
 def test_missing_or_ambiguous_vintage_fails_loudly_not_with_systemexit(tmp_path, monkeypatch):
     # FileNotFoundError, not SystemExit — the epic-#499 lesson (a SystemExit slips past
     # `except Exception` best-effort guards; same contract as common/school_sampling._lea_file).
-    monkeypatch.setattr(IDU, "project_root", tmp_path)
+    monkeypatch.setenv("LCT_DATA_ROOT", str(tmp_path / "data"))
     with pytest.raises(FileNotFoundError, match="ccd_lea_029"):
         IDU.nces_ccd_lea_file()                                   # vintage dir absent entirely
     _vintage(tmp_path, NCES_PRIMARY_YEAR.replace("-", "_"),
@@ -56,7 +56,7 @@ def test_load_urls_from_csv_resolves_by_header_name(tmp_path, monkeypatch):
         "2024-2025,100006,Beta,2024,\n"                           # blank -> excluded
         "2024-2025,100007,Gamma,2024,N\n"                         # placeholder -> excluded
         "2024-2025,100008,Delta,2024,http://delta.k12.us/\n")
-    monkeypatch.setattr(IDU, "project_root", tmp_path)
+    monkeypatch.setenv("LCT_DATA_ROOT", str(tmp_path / "data"))
     assert IDU.load_urls_from_csv() == {
         "0100005": "https://www.alpha.k12.us",                    # LEAID zero-padded to 7 digits
         "0100008": "http://delta.k12.us",                         # protocol kept, trailing / dropped

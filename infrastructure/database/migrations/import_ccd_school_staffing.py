@@ -78,10 +78,9 @@ from infrastructure.utilities.grade_bands import LEVEL_BAND  # noqa: E402
 from infrastructure.utilities.school_year import NCES_PRIMARY_YEAR, is_covid_year, start_year  # noqa: E402
 from infrastructure.utilities.zip_members import open_member  # noqa: E402
 
-# Where the files live is the MANIFEST's `base` (data/raw/federal/nces-ccd), resolved by
-# source_manifest.year_folder — the one folder rule, which honours LCT_DATA_ROOT (#1089). RAW_ROOT is
-# only an override of the tree that `base` is joined to (tests point it at a scratch tree); None = the repo.
-RAW_ROOT: Path | None = None
+# Where the files live is the MANIFEST's `base`, resolved by source_manifest.year_folder: the one folder
+# rule, which honours LCT_DATA_ROOT (#1089, #1099). `root`, where a function takes it, overrides the tree
+# that `base` is joined to (tests point it at a scratch tree); None means the default resolution.
 MANIFEST_SOURCE = "nces-ccd"
 SCHOOL_FILE_IDS = ("029", "052", "059")
 LEA_FILE_ID = "lea_059"
@@ -587,7 +586,7 @@ def write_year(session, year: str, rows: list[dict], details: dict) -> int:
     return len(rows)
 
 
-def main(argv: list[str] | None = None) -> None:
+def main(argv: list[str] | None = None, root: Path | None = None) -> None:
     parser = argparse.ArgumentParser(description="Load the CCD school files verbatim into ccd_school_staffing")
     parser.add_argument(
         "--year", default=NCES_PRIMARY_YEAR,
@@ -599,7 +598,7 @@ def main(argv: list[str] | None = None) -> None:
     print("=" * 60)
     print("NCES CCD school staffing import (ccd_school_staffing)")
     print("=" * 60)
-    rows, details = load_year(args.year, RAW_ROOT)
+    rows, details = load_year(args.year, root)
     if args.dry_run:
         print(f"\nDRY RUN: {len(rows):,} rows for {args.year} parsed and guarded; nothing written")
         return

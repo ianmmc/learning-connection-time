@@ -42,12 +42,14 @@ LEA_COLS = ["SCHOOL_YEAR", "LEAID", "STAFF", "STAFF_COUNT", "TOTAL_INDICATOR", "
 
 ELEM, MID, HIGH = "010000500001", "010000500002", "010000500003"
 LEA = "0100005"
-BASE = "data/raw/federal/nces-ccd"        # the real manifest's base: the importer resolves it
+# A fixture base that is NOT the real one, so locate() must take the folder from the manifest it is handed:
+# a regression to a hard-coded base turns test_locate_reads_the_form_the_manifest_pins red (#1108).
+BASE = "fixture/ccd-tree"
 
 
-def ydir(root: Path, year: str = YEAR) -> Path:
-    """Where build_year writes, and where the importer must look (source_manifest.year_folder)."""
-    return root / BASE / year.replace("-", "_")
+def ydir(root: Path, year: str = YEAR, base: str = BASE) -> Path:
+    """Where build_year writes: the production folder rule over the fixture base (no second copy)."""
+    return source_manifest.year_folder(base, year, root)
 
 
 @pytest.fixture(autouse=True)
@@ -145,9 +147,9 @@ FILE_STEMS = {
 
 
 def build_year(root: Path, *, directory=None, staff=None, membership=None, lea=None,
-               membership_as_zip=True, staff_as_zip=False, year=YEAR) -> dict:
+               membership_as_zip=True, staff_as_zip=False, year=YEAR, base=BASE) -> dict:
     """Write a year directory under `root` and return a manifest that pins every file (all four)."""
-    d = ydir(root, year)
+    d = ydir(root, year, base)
     d.mkdir(parents=True, exist_ok=True)
     files = {}
 
@@ -166,7 +168,7 @@ def build_year(root: Path, *, directory=None, staff=None, membership=None, lea=N
     put(FILE_STEMS["052"], _csv_bytes(MEMB_COLS, _membership() if membership is None else membership),
         membership_as_zip)
     put(FILE_STEMS["lea_059"], _csv_bytes(LEA_COLS, _lea() if lea is None else lea), False)
-    return {"source": "nces-ccd", "base": BASE, "years": {year: [
+    return {"source": "nces-ccd", "base": base, "years": {year: [
         {"file": n, "bytes": p.stat().st_size, "sha256": source_manifest.sha256_file(p), "url": "u"}
         for n, p in files.items()]}}
 
@@ -577,7 +579,6 @@ def test_write_year_replaces_the_year_in_chunks_and_logs_lineage(monkeypatch):
 
 def test_dry_run_never_opens_a_session(monkeypatch, tmp_path):
     manifest = build_year(tmp_path)
-    monkeypatch.setattr(m, "RAW_ROOT", tmp_path)
     monkeypatch.setattr(m.source_manifest, "load", lambda source: manifest)
     opened = MagicMock()
 
@@ -586,9 +587,9 @@ def test_dry_run_never_opens_a_session(monkeypatch, tmp_path):
         opened()
         yield _session(1, 1)
     monkeypatch.setattr(m, "session_scope", scope)
-    m.main(["--year", YEAR, "--dry-run"])
+    m.main(["--year", YEAR, "--dry-run"], root=tmp_path)
     opened.assert_not_called()
-    m.main(["--year", YEAR])
+    m.main(["--year", YEAR], root=tmp_path)
     opened.assert_called_once()
 
 
@@ -634,12 +635,14 @@ def test_phase_3_fails_when_only_the_school_import_fails(monkeypatch):
 
 
 def test_the_folder_comes_from_the_manifest_base_and_follows_lct_data_root(tmp_path, monkeypatch):
-    """#1089: no importer-local folder rule. With no root given, the manifest's base resolves under
-    LCT_DATA_ROOT (the `data/` prefix relocates), exactly as source_manifest.verify sees it."""
-    manifest = build_year(tmp_path / "relocated" / "repo-shaped")
-    moved = tmp_path / "relocated" / "repo-shaped" / "data"
+    """#1089/#1099: no importer-local folder rule. With no root given, a manifest whose base is the real
+    CCD base resolves under LCT_DATA_ROOT (the `data/` prefix relocates), exactly as
+    source_manifest.ccd_year_folder (every CCD reader) and source_manifest.verify see it."""
+    repo_shaped = tmp_path / "relocated"
+    manifest = build_year(repo_shaped, base=source_manifest.CCD_BASE)
+    moved = repo_shaped / "data"
     monkeypatch.setenv("LCT_DATA_ROOT", str(moved))
     sources = m.locate(YEAR, manifest)
-    assert sources["029"][0].parent == moved / "raw/federal/nces-ccd/2024_25"
+    assert sources["029"][0].parent == moved / "raw/federal/nces-ccd/2024_25" == source_manifest.ccd_year_folder(YEAR)
     rows, _ = m.load_year(YEAR, None, manifest)
     assert len(rows) == 3

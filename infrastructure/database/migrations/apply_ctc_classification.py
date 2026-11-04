@@ -63,6 +63,7 @@ project_root = Path(__file__).parent.parent.parent.parent
 sys.path.insert(0, str(project_root))
 
 from infrastructure.database.connection import session_scope
+from infrastructure.utilities.source_manifest import ccd_year_folder
 from infrastructure.database.models import District, DataLineage
 
 NAME_KEYWORDS = ["career", "technical", "vocational", "jted", "cted"]
@@ -75,7 +76,7 @@ BLANKET_EXCLUDE_LEA_TYPES = {
 
 def load_lea_types(year: str) -> dict:
     """district_id (zero-padded LEAID) -> LEA_TYPE_TEXT, from the LEA directory file."""
-    data_dir = project_root / "data" / "raw" / "federal" / "nces-ccd" / year
+    data_dir = ccd_year_folder(year)                       # one resolver; honours LCT_DATA_ROOT (#1099)
     matches = sorted(data_dir.glob("ccd_lea_029_*.csv"))
     if len(matches) != 1:
         print(f"Error: expected exactly one ccd_lea_029_*.csv in {data_dir}, found {matches}")

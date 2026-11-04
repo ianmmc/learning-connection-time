@@ -30,6 +30,7 @@ from infrastructure.database.connection import session_scope, get_engine
 from infrastructure.utilities.common import ccd_education_unit_totals
 from infrastructure.utilities.data_guards import reconcile_total, require_match_coverage
 from infrastructure.utilities.school_year import NCES_PRIMARY_YEAR
+from infrastructure.utilities.source_manifest import ccd_year_folder
 from infrastructure.database.models import (
     District,
     StaffCounts,
@@ -489,7 +490,7 @@ def main():
     # Default file paths: glob by NCES file-ID prefix, since the release-date
     # suffix (e.g. _073124, _073025) varies by year and can't be derived from
     # the --year argument alone.
-    data_dir = project_root / "data" / "raw" / "federal" / "nces-ccd" / args.year.replace("-", "_")
+    data_dir = ccd_year_folder(args.year)                  # one resolver; honours LCT_DATA_ROOT (#1099)
 
     def find_default_file(file_id: str) -> Optional[Path]:
         matches = sorted(data_dir.glob(f"ccd_lea_{file_id}_*.csv"))

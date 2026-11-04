@@ -26,6 +26,8 @@ import requests
 from typing import List, Dict
 import yaml
 
+sys.path.insert(0, str(Path(__file__).resolve().parents[3]))   # repo root, for the lazy CCD-folder import
+
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(levelname)s - %(message)s'
@@ -128,11 +130,11 @@ def get_output_directory(year: str, base_path: Path = None) -> Path:
         Path object for the output directory
     """
     if base_path is None:
-        # Default to project structure
-        script_dir = Path(__file__).parent
-        base_path = script_dir.parent.parent.parent / "data" / "raw" / "federal" / "nces-ccd"
-    
-    output_dir = base_path / year.replace("-", "_")
+        # The one CCD folder resolver, so a download lands where every importer reads (LCT_DATA_ROOT, #1099)
+        from infrastructure.utilities.source_manifest import ccd_year_folder
+        output_dir = ccd_year_folder(year)
+    else:
+        output_dir = base_path / year.replace("-", "_")
     output_dir.mkdir(parents=True, exist_ok=True)
     
     return output_dir
