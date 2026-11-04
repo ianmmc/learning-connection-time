@@ -169,19 +169,19 @@ fires automatically on gate@8 approval — the CLI is the recovery/backfill path
 watchdogs; each script's docstring carries its own check-map, so run the script rather than trusting
 any summary of it.
 
-**Current status (2026-11-01): the SPED baseline refresh is ADOPTED; the CCD level scopes are
-QUARANTINED.** Main `cb35e9f`. Epic #724's refresh landed (PR #1007: 2024-25 baseline, 5-21 band,
-REQ-026 exemption retired, #974 partition from `teachers_only`, #1004 step 1 per-LEA share); MA's SEA
-file re-imported under its true vintage (PR #1015); the `outputs/` LCT snapshot retired (PR #1016).
-**#1017:** CCD "elementary" teachers follow STATE practice (≤ grade 8; ~22 jurisdictions report K-8 as
-elementary), so `teachers_elementary` / `teachers_secondary` are not comparable across states. PR #1024
-quarantines them: one caveat home (`infrastructure/utilities/lct_scopes.py`), a `QUARANTINED_1017` token
-on every level row (written live, run `20261101T214220Z` — 163,962 rows, every non-`notes` column
-identical), out of the QA hierarchy and outlier list. Decisions + lessons: `docs/PROJECT_HISTORY.md`
-2026-10-31/11-01 entry. The **pipeline has not moved since 2026-08-26** (latest `state_event` 08-26;
-`batch_00058` at Stage 5; 57 districts in `bell_schedules`). Baseline GREEN on main: `lint-imports`
-**5 kept / 0 broken**, `pytest -q -m "not integration"` **2832 passed, 1 skipped**, govdb 410, Node 106.
-The one red network test is #938 (catalog drift), not a regression.
+**Current status (2026-11-04): #1022's school files are LOADED; T6 is next, every design input
+decided.** Main `2cdd722`. T1–T5 merged (grade-band home, Deflate64 reader, CCD catalog + manifest,
+migration 033, the school importer). Migration **034** applied live (`lea_band_staffing` grade CHECKs).
+`ccd_school_staffing` was **loaded live 2026-11-03** (2024-25 102,178 schools / 2023-24 102,274, 0
+per-school disagreements; lineage ids 11458/11459; backup `data/backups/lct-pre-ccd-load-20261103T212721Z.dump`).
+Every CCD reader resolves its folder through `source_manifest.ccd_year_folder` (honours `LCT_DATA_ROOT`).
+**Pre-K without a school key** is decided (Ian, 2026-11-03/04; R1–R7): Michigan reports Pre-K only at
+LEA level and 354 districts elsewhere share the gap → plan note section of that name +
+`…/2026-11-04-keyless-prek-measure.py`; PROJECT_HISTORY 2026-11-03/04. The level pair stays QUARANTINED
+(#1017, PR #1024). The **pipeline has not moved since 2026-08-26** (`batch_00058` at Stage 5; 57 districts
+in `bell_schedules`). Baseline GREEN on main: `lint-imports` **5 kept / 0 broken**, `pytest -q -m "not
+integration"` **2992 passed, 1 skipped**, govdb 415, Node 106; migrations 34/34. #938 (catalog drift) is
+the one red network test.
 
 **Standing findings that change what to do next:**
 - **#823's remedy is unreachable as designed.** `MAX_TOKENS_CEILING = 32000`
@@ -201,36 +201,32 @@ The one red network test is #938 (catalog drift), not a regression.
   never written (the CCD ingest's constructor omits it), never read. The in-scope school count is
   `nces_school_counts` in each Stage-1 batch receipt, from `school_sampling.school_index()`.
 
-**Next (RESUME HERE — 2026-11-01).** The next chunk is **A, the #1017 school-file band scopes**. The
-pipeline track (B) is unchanged from 08-26 (`docs/scratch-paper/2026-08-25-fresh-triage-and-validation-batch-plan.md`, untracked).
+**Next (RESUME HERE — 2026-11-04).** The next chunk is **A, #1022 T6**. The pipeline track (B) is
+unchanged from 08-26 (`docs/scratch-paper/2026-08-25-fresh-triage-and-validation-batch-plan.md`, untracked).
 
-**A. #1017 → school-file band teacher scopes (epic #724).** Note:
-`docs/technical-notes/production-quality-control-research/2026-11-01-ccd-level-teacher-split.md`
-(findings, research, the REJECTED correction plan and why, acceptance properties); rerun its numbers with
-`…/2026-11-01-ccd-level-teacher-split-measure.py [--school-files]`.
-1. **#1022 phase 2 — PLAN WRITTEN, D1–D8 ALL DECIDED (Ian, 2026-11-01)**:
-   `docs/technical-notes/production-quality-control-research/2026-11-01-school-file-band-scopes-plan.md`.
-   It holds the verified findings, the design (its "Revised" block supersedes the fixed-band items), the
-   decisions and their measurements, roadmap T1–T11 as #1022's sub-issues (#1035–#1044, #1046), and
-   acceptance A1–A7.
-   - **Design of record:** the plan note (Revised Design block + "GenEd band variants"). METHODOLOGY stays
-     present-state and gains the scopes only at T10.
-   - **Ready to start:** every task up to T9. 2023-24 school zips are in place.
-   - **Key facts:**
-     - Bands are the pipeline's own SCHOOL bands (`primary_bands_for`), named `teachers_band_*`, with the
-       grade span on each row. Single-band schools (96.1% of FTE) are attributed whole; combined schools
-       are split by grade.
-     - Pre-K uses the LEA-reported Pre-K FTE.
-     - The SPED GenEd variants spread IDEA's assigned state total by school CRDC SPEDCERT share.
-     - The pre-push hook and DB-free tests forbid DB access, so the drift check
-   is pre-commit-when-Docker-is-up (D7), not pre-push.
-2. **#1023 phase 3** — retire the LEA pair once #1022 validates (rows stay readable; move
-   `per_grade_lct_sample.py` to the new secondary scope).
-3. **Open nearby, from the same audit:** #1018 (a level check that can never fire) · #1019
-   (`state_requirements` mixes daily-minute and annual-hour bases: DE/UT/ME) · #1020 (unweighted district
-   medians — add student-weighted) · #1021 (METHODOLOGY framing) · #1033 (QA outliers truncated by
-   scope order) · #940 (545 NaN `lct_calculations` rows) · #1004 step 2 (LEA SPED count as numerator) ·
-   #1006 (#241 floor). Lower-severity: #990–#998. Infra: #941 · #938 · #935 · #936 · #937.
+**A. #1022 → school-file band teacher scopes (epic #724).** Design of record:
+`docs/technical-notes/production-quality-control-research/2026-11-01-school-file-band-scopes-plan.md`
+(Revised Design block, "GenEd band variants", "Pre-K without a school key"; roadmap T1–T11; acceptance
+A1–A7). METHODOLOGY stays present-state and gains the scopes only at T10.
+1. **T6 (#1040) — derive `lea_school_staffing` / `lea_band_staffing` / `lea_grade_teacher_fte`** from the
+   loaded `ccd_school_staffing` + `ccd_lea_059`: one function with `method_version`, the pipeline's own
+   school bands (`grade_bands.primary_bands_for`; single-band schools whole, combined split by grade),
+   D3 Pre-K (LEA-reported FTE, allocated by school Pre-K membership), D4 coverage, D5 unattributed FTE.
+   - **Key-less districts (R1–R7, all decided):** no state gate; "outside" only when Σschool = LEA total
+     − Pre-K within 0.1% in BOTH this vintage and the previous one; otherwise subtract at PK-offering
+     schools (else elementary-band) ∝ teacher FTE BEFORE the grade split; Pre-K > hosts' FTE → no clip,
+     elementary band unpublished + flagged; bounds derived (`GREATEST(0, pk − unattributed_fte)`), not
+     stored. Measured by `…/2026-11-04-keyless-prek-measure.py` — import its universe rules, don't re-spell.
+   - **Migration 035 ships with T6:** `lea_school_staffing.pk_membership` nullable (NULL when key-less),
+     new `lea_pk_membership` (LEA-file count; `pk_zero_with_students` reads it). Declare in migration AND
+     model (PR #641 invariant); T7's `chk_staff_scope` becomes 036. #1088 item 3 (run grouping,
+     `method_version` vocabulary, LEA-input sha) is T6's to settle.
+2. **Then T7 → T8 → T9 (stop for Ian's adoption call) → T10 → T11**, one PR each, Ian merging.
+3. **#1023 phase 3** — retire the LEA pair once #1022 validates.
+4. **Open nearby:** #1086 (item 3), #1092 (MA enrollment refresh — Ian's call), #1045, #1047 · #1018 ·
+   #1019 · #1020 · #1021 · #1033 · #940 · #1004 step 2 · #1006. Infra: #941 · #938 · #935 · #936 · #937.
+- **Review practice (Ian, 2026-11-03):** `/code-review … --max-findings all`; every verified finding is
+  filed as an issue; one closing keyword PER issue in a PR body (`closes #1, closes #2`).
 
 **B. Pipeline (resumes exactly where 08-26 left it):**
 1. **`batch_00058` gate@5 tagging — Ian, console.** 12 fresh districts, 252 records; the **first
@@ -271,13 +267,14 @@ pipeline track (B) is unchanged from 08-26 (`docs/scratch-paper/2026-08-25-fresh
 **Resume essentials:** `source .venv/bin/activate` (the project `.venv` is the ONE env — the git hooks
 prefer it and the pre-push refuses a stale one, #955) · `pip install -r requirements.txt && pip install
 -e .` · `docker-compose up -d` (Docker Postgres 16.15 — never `brew services`) · verify with
-`lint-imports` (expect 5 kept / 0 broken) + `pytest -q -m "not integration"` (2832 passed, 1 skipped on main);
-add `pytest -q -m govdb` (410) and `npm test` in `infrastructure/scraper` (106) when touching those
+`lint-imports` (expect 5 kept / 0 broken) + `pytest -q -m "not integration"` (2992 passed, 1 skipped on main);
+add `pytest -q -m govdb` (415) and `npm test` in `infrastructure/scraper` (106) when touching those
 layers. Console: `python3 -m infrastructure.acquisition.process_governance.server` → :8005 (scratch
 servers on **:8015**). Expected counts live in `GETTING_STARTED.md` §3 — their ONE home; §3a carries the
 verified precious-tables `pg_dump` (it runs **inside** the container and must redirect with `>`, never
 `-f`); last precious backup `data/backups/precious-20261029T134609Z.sql`, last LCT backup
-`data/backups/lct-pre1025-20261101T214129Z.dump` (`pg_dump -Fc`, restore-verified; both gitignored). Governance DB import is
+`data/backups/lct-pre-ccd-load-20261103T212721Z.dump` (`pg_dump -Fc`; the last restore-verified one is
+`lct-pre034-20261103T211805Z.dump`; all gitignored). Governance DB import is
 `from infrastructure.acquisition.common import db as gdb` (NOT `gov_db`); every engine URL goes through
 `infrastructure/utilities/db_url.py` (driver pinned to psycopg 3, auto-prepare OFF — never build an
 engine around it); the LCT calc's DB rows come ONLY from `infrastructure/utilities/frames.db_records`.
