@@ -2699,7 +2699,7 @@ teachers. Michigan's own notes explain why many districts' school sums fall shor
 reporting, reportable programs, shared schools). So whether a key-less district's Pre-K teachers sit
 inside its school counts is a per-district fact to measure, not a state property.
 
-**Decision (Ian 2026-11-03; revised 2026-11-04 after review, revisions awaiting his confirmation).** Pre-K
+**Decision (Ian 2026-11-03; revised after review and confirmed by Ian 2026-11-04).** Pre-K
 students are dropped, as everywhere. A key-less district's Pre-K FTE is subtracted from its PK-offering
 schools (else its elementary-band schools), in proportion to their teacher FTE, before the grade split.
 The exception is a district whose school sum equals its LEA total minus Pre-K, within 0.1%, in BOTH the
