@@ -346,8 +346,7 @@ rows.
 **Decision.** Option 1 (Ian, 2026-11-03) is to subtract unless the district's numbers show Pre-K outside the
 school counts, with a 0.1% tolerance and the default subtraction plus stored bounds for the neither
 districts. Rejected: subtracting everywhere, and ignoring Pre-K teachers. **Revised 2026-11-04 after the
-#1095/#1096 review: R1, R3, R4 and R5 confirmed by Ian (2026-11-04); R2 and R6 are corrections; R7 is the
-schema proposal T6 implements, still PROPOSED.**
+#1095/#1096 review: R1, R3, R4, R5 and R7 confirmed by Ian (2026-11-04); R2 and R6 are corrections.**
 - **R1 — trigger (#1102).** The fallback applies to every key-less district, in any state. There is no
   state gate.
 - **R2 — universe (#1097, #1098).** Real Pre-K FTE (not `'NaN'`), LCT-eligible districts.
@@ -366,7 +365,7 @@ schema proposal T6 implements, still PROPOSED.**
   `GREATEST(0, pk_teachers_reported − unattributed_fte)` on existing `lea_school_staffing` columns. T9's
   before/after reports the neither districts' elementary bands at both bounds. Whether they publish is
   decided at T9, with D4's coverage floor.
-- **R7 — T6's schema change, migration 035 (#1103). PROPOSED (T6).** `lea_school_staffing.pk_membership` becomes
+- **R7 — T6's schema change, migration 035 (#1103). Approved (Ian, 2026-11-04); T6 implements it.** `lea_school_staffing.pk_membership` becomes
   nullable (NULL for a key-less district, never a fabricated 0; #1070). A new `lea_pk_membership` holds
   the LEA-file Pre-K count, which `pk_zero_with_students` reads, so the 29 Michigan districts are
   flagged. Both are declared in migration and model (the PR #641 invariant). T7's `chk_staff_scope`
