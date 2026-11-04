@@ -1059,6 +1059,34 @@ When using staffing data from a different year than enrollment:
 
 See `docs/STAFFING_DATA_ENHANCEMENT_PLAN.md` for complete data source strategy
 
+### Source Exception: Michigan Pre-K in the CCD School Files
+
+Michigan reports Pre-K students to the CCD **only at the district (LEA) and state levels, never per
+school**. NCES's membership metadata says so for 2023-24 and 2024-25 (*"Membership counts for pre-K are
+reported for the LEA and SEA levels, they are not reported at the building level"*), and the 2018-19
+state notes say the same, so the pattern is long-standing.
+
+- **In the data.** The LEA file has 53,882 Michigan Pre-K students in 2024-25 (48,993 in 2023-24). The
+  school file has none: about 1,110 Pre-K cells per year are 'Manual adjustment' zeros. `ccd_school_staffing`
+  stores them as NULL with the flag kept in `membership_flags` (#1070). They mean "not reported at this
+  level", never "no Pre-K".
+- **Pre-K teachers are real and separate.** The LEA file reports 2,980 Pre-K and 5,137 kindergarten
+  teacher FTE separately (2024-25). 53,882 / 2,980 = 18.1 students per FTE, which matches the state Great
+  Start Readiness Program's class of 18 with one lead teacher. They are not blended Pre-K/K teachers.
+- **They are placed in school counts inconsistently.** Federal rule (EDFacts FS059, SY 2023-24 to
+  2025-26) is that a school's teacher FTE includes its Pre-K teachers. Michigan lets districts report FTE
+  at the district level instead of prorating it, and its Pre-K-only buildings are "reportable programs",
+  which are absent from the school directory. So in some districts the Pre-K teachers are inside the
+  school totals and in others they are not.
+- **Current results are unaffected.** Every scope in `lct_calculations` is built from LEA-level staffing,
+  where Pre-K teachers are a separate, reported count, and all scopes exclude them.
+- **Where it will matter.** The school-file band scopes (#1022, not yet computed) need Pre-K teachers out
+  of each school's total, and Michigan gives no school-level key for that. The decided treatment is to
+  subtract the district's Pre-K FTE from its elementary band, unless the district's school total equals
+  its LEA total minus Pre-K. It is recorded, with its measurements and the still-open match tolerance, in
+  `docs/technical-notes/production-quality-control-research/2026-11-01-school-file-band-scopes-plan.md`
+  ("Michigan Pre-K"). Sources: `docs/research/` (the research summary and the three FS059 specs).
+
 ---
 
 ## Temporal Data Blending (3-Year Window Rule - REQ-026)
