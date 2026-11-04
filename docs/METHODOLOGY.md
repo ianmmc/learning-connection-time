@@ -1083,7 +1083,8 @@ state notes say the same, so the pattern is long-standing.
 - **Where it will matter.** The school-file band scopes (#1022, not yet computed) need Pre-K teachers out
   of each school's total, and Michigan gives no school-level key for that. The decided treatment is to
   subtract the district's Pre-K FTE from its elementary band, unless the district's school total equals
-  its LEA total minus Pre-K. It is recorded, with its measurements and the still-open match tolerance, in
+  its LEA total minus Pre-K (to within 0.1%, the tolerance calibrated on the other states). It is recorded,
+  with its measurements, in
   `docs/technical-notes/production-quality-control-research/2026-11-01-school-file-band-scopes-plan.md`
   ("Michigan Pre-K"). Sources: `docs/research/` (the research summary and the three FS059 specs).
 

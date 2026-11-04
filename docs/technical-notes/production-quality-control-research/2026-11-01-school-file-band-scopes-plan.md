@@ -339,11 +339,15 @@ same districts' Elementary-level school FTE).
   district's school counts to `[max(0, pk − gap), pk]`, with `gap = LEA total − Σ school`. Summed over
   the neither districts, the bound width is 1,766 FTE.
 
-**PROPOSED, not yet decided (Ian):**
-1. Tolerance **0.1%** (the calibrated exact-match mode), not ±1%.
-2. In the neither districts, apply the decided default (subtract), and store both bounds in
-   `lea_school_staffing` so T9's before/after can show the sensitivity. Whether a neither district's
-   elementary band publishes is decided at T9 adoption, alongside D4's coverage floor.
+**Decided 2026-11-03 (Ian accepted both proposals):**
+1. **Match tolerance 0.1%** (the calibrated exact-match mode), not ±1%. A district is "Pre-K outside"
+   when |Σ school / (LEA total − LEA Pre-K) − 1| ≤ 0.1% and that is the closer of the two hypotheses.
+   At 2024-25 that is 33 districts and 172 Pre-K FTE.
+2. **Neither districts take the default subtraction, with both bounds stored.** The full LEA Pre-K FTE
+   is subtracted from the elementary band (the federal default). `lea_school_staffing` also stores the
+   lower bound `max(0, pk − gap)`, so T9's before/after shows how much those districts' elementary bands
+   move. Whether a neither district's elementary band publishes is decided at T9 adoption, alongside
+   D4's coverage floor.
 
 Rerun: the queries are in the #1040 comments (2026-11-03). T6 turns them into the derivation's own
 rerunnable measure script.
