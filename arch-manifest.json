@@ -473,6 +473,18 @@
         "literal": "2024-25",
         "count": 3,
         "why": "The refreshed baseline set's baseline_year key, its IDEA child count's data_year (#1000) and its IDEA LEA environments file's data_year (#1004) — fixed source vintages, sha256-pinned."
+      },
+      {
+        "file": "infrastructure/database/migrations/import_all_data.py",
+        "literal": "2023-24",
+        "count": 1,
+        "why": "NCES_RAW_DIR's ST_LEAID source folder. It was spelled '2023_24' before #1099 routed it through ccd_year_folder, which is why this scanner could not see it; whether it should follow NCES_PRIMARY_YEAR is #1045, open."
+      },
+      {
+        "file": "infrastructure/database/migrations/apply_st_leaid_migration.py",
+        "literal": "2023-24",
+        "count": 1,
+        "why": "A one-off historical migration (ST_LEAID population) that read the 2023-24 LEA directory; a FIXED source vintage, not 'current'. Visible to this scanner since #1099 respelled the folder from '2023_24'."
       }
     ]
   }

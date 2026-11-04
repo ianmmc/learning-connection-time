@@ -215,3 +215,32 @@ def test_verify_finds_a_relocated_data_tree(monkeypatch, tmp_path):
     assert SM.verify(m)["checked"] == ["2024-25/a.csv"]
     monkeypatch.delenv("LCT_DATA_ROOT")
     assert SM.verify(m)["absent"] == ["2024-25/a.csv"]
+
+
+# ----------------------------------------------------------------------------- #1099: one CCD folder resolver
+def test_ccd_base_is_the_tracked_manifests_base():
+    assert SM.load("nces-ccd")["base"] == SM.CCD_BASE == GEN.BASE
+
+
+def test_ccd_year_folder_accepts_both_year_forms_and_follows_lct_data_root(monkeypatch, tmp_path):
+    monkeypatch.delenv("LCT_DATA_ROOT", raising=False)
+    assert SM.ccd_year_folder("2024-25") == SM.ccd_year_folder("2024_25") == SM.REPO / SM.CCD_BASE / "2024_25"
+    monkeypatch.setenv("LCT_DATA_ROOT", str(tmp_path))
+    assert SM.ccd_year_folder("2024-25") == tmp_path / "raw/federal/nces-ccd/2024_25"
+
+
+def test_no_ccd_reader_spells_the_ccd_folder_by_hand():
+    """Every CCD reader and the downloader resolve through ccd_year_folder, so LCT_DATA_ROOT moves them
+    together (#1099: the school importer moved while the LEA importer that runs before it did not)."""
+    import ast
+    hand_built = []
+    for root in ("infrastructure/database", "infrastructure/scripts", "infrastructure/utilities"):
+        for p in (SM.REPO / root).rglob("*.py"):
+            for node in ast.walk(ast.parse(p.read_text(encoding="utf-8"))):
+                # a path built with `/` that names the CCD folder: Path(...) / "nces-ccd" or / "data/raw/federal/nces-ccd"
+                if isinstance(node, ast.BinOp) and isinstance(node.op, ast.Div):
+                    for side in (node.left, node.right):
+                        if isinstance(side, ast.Constant) and isinstance(side.value, str) and (
+                                side.value == "nces-ccd" or "federal/nces-ccd" in side.value):
+                            hand_built.append(f"{p.relative_to(SM.REPO)}:{node.lineno}")
+    assert sorted(set(hand_built)) == []

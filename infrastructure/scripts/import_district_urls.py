@@ -43,6 +43,7 @@ sys.path.insert(0, str(project_root))
 
 from sqlalchemy import text
 from infrastructure.database.connection import session_scope
+from infrastructure.utilities.source_manifest import ccd_year_folder
 from infrastructure.utilities.school_year import NCES_PRIMARY_YEAR
 
 
@@ -51,7 +52,7 @@ def nces_ccd_lea_file(primary_year: str = NCES_PRIMARY_YEAR) -> Path:
     NCES_PRIMARY_YEAR). Resolved lazily (not at module-import time) — glob + exactly-one, same
     check as common/school_sampling._lea_file but NOT imported from it: infrastructure.scripts must
     never import infrastructure.acquisition (pyproject.toml layering contract)."""
-    vdir = project_root / "data/raw/federal/nces-ccd" / primary_year.replace("-", "_")
+    vdir = ccd_year_folder(primary_year)                   # one resolver; honours LCT_DATA_ROOT (#1099)
     hits = sorted(vdir.glob("ccd_lea_029_*.csv"))
     if len(hits) != 1:
         raise FileNotFoundError(

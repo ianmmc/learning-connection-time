@@ -37,6 +37,7 @@ PROJECT_ROOT = Path(__file__).parent.parent.parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
 
 from infrastructure.utilities.school_year import NCES_PRIMARY_YEAR  # noqa: E402 — after the shim (#987)
+from infrastructure.utilities.source_manifest import ccd_year_folder  # noqa: E402
 from infrastructure.database.connection import get_engine, session_scope, get_table_counts
 from infrastructure.database.models import (
     District,
@@ -66,7 +67,7 @@ DISTRICTS_FILE = DATA_DIR / "processed" / "normalized" / "districts_2023_24_nces
 BELL_SCHEDULES_FILE = DATA_DIR / "enriched" / "bell-schedules" / "bell_schedules_manual_collection_2024_25.json"
 
 # Raw NCES CCD file for ST_LEAID population
-NCES_RAW_DIR = DATA_DIR / "raw" / "federal" / "nces-ccd" / "2023_24"
+NCES_RAW_DIR = ccd_year_folder("2023-24")    # one resolver (#1099); the hard-coded year is #1045
 CROSSWALK_MIGRATION_FILE = MIGRATIONS_DIR / "007_add_state_crosswalk.sql"
 
 

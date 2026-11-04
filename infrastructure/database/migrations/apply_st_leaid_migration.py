@@ -14,6 +14,7 @@ project_root = Path(__file__).parent.parent.parent.parent
 sys.path.insert(0, str(project_root))
 
 from infrastructure.database.connection import get_engine, session_scope
+from infrastructure.utilities.source_manifest import ccd_year_folder
 from infrastructure.database.models import District
 from sqlalchemy import text
 
@@ -42,7 +43,7 @@ def populate_st_leaid():
     print("\nPopulating st_leaid from NCES data...")
 
     # Find raw NCES directory file
-    nces_dir = project_root / "data" / "raw" / "federal" / "nces-ccd" / "2023_24"
+    nces_dir = ccd_year_folder("2023-24")                  # one resolver; honours LCT_DATA_ROOT (#1099)
     directory_files = list(nces_dir.glob("ccd_lea_029_*.csv"))
 
     if not directory_files:

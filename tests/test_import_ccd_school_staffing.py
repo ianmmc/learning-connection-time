@@ -42,6 +42,14 @@ LEA_COLS = ["SCHOOL_YEAR", "LEAID", "STAFF", "STAFF_COUNT", "TOTAL_INDICATOR", "
 
 ELEM, MID, HIGH = "010000500001", "010000500002", "010000500003"
 LEA = "0100005"
+# A fixture base that is NOT the real one, so locate() must take the folder from the manifest it is handed:
+# a regression to a hard-coded base turns test_locate_reads_the_form_the_manifest_pins red (#1108).
+BASE = "fixture/ccd-tree"
+
+
+def ydir(root: Path, year: str = YEAR, base: str = BASE) -> Path:
+    """Where build_year writes: the production folder rule over the fixture base (no second copy)."""
+    return source_manifest.year_folder(base, year, root)
 
 
 @pytest.fixture(autouse=True)
@@ -139,9 +147,9 @@ FILE_STEMS = {
 
 
 def build_year(root: Path, *, directory=None, staff=None, membership=None, lea=None,
-               membership_as_zip=True, staff_as_zip=False, year=YEAR) -> dict:
+               membership_as_zip=True, staff_as_zip=False, year=YEAR, base=BASE) -> dict:
     """Write a year directory under `root` and return a manifest that pins every file (all four)."""
-    d = root / year.replace("-", "_")
+    d = ydir(root, year, base)
     d.mkdir(parents=True, exist_ok=True)
     files = {}
 
@@ -160,7 +168,7 @@ def build_year(root: Path, *, directory=None, staff=None, membership=None, lea=N
     put(FILE_STEMS["052"], _csv_bytes(MEMB_COLS, _membership() if membership is None else membership),
         membership_as_zip)
     put(FILE_STEMS["lea_059"], _csv_bytes(LEA_COLS, _lea() if lea is None else lea), False)
-    return {"source": "nces-ccd", "base": "x", "years": {year: [
+    return {"source": "nces-ccd", "base": base, "years": {year: [
         {"file": n, "bytes": p.stat().st_size, "sha256": source_manifest.sha256_file(p), "url": "u"}
         for n, p in files.items()]}}
 
@@ -242,7 +250,7 @@ def test_loads_without_a_deprecation_warning(tmp_path):
 # ------------------------------------------------------------------------------------------------- the manifest decides
 def test_locate_reads_the_form_the_manifest_pins(tmp_path):
     manifest = build_year(tmp_path, staff_as_zip=True)
-    d = tmp_path / "2024_25"
+    d = ydir(tmp_path)
     (d / (FILE_STEMS["059"] + ".csv")).write_bytes(b"stray extracted copy")    # both forms on disk
     sources = m.locate(YEAR, manifest, tmp_path)
     assert sources["059"][0].suffix == ".zip" and sources["029"][0].suffix == ".csv"
@@ -265,7 +273,7 @@ def test_locate_refuses_an_undeclared_year_id_or_absent_pin(tmp_path):
     with pytest.raises(DataGuardError, match=r"declares 2 ccd_sch_059_\* file"):
         m.load_year(YEAR, tmp_path, manifest)
     manifest["years"][YEAR] = entries
-    (tmp_path / "2024_25" / (FILE_STEMS["lea_059"] + ".csv")).unlink()
+    (ydir(tmp_path) / (FILE_STEMS["lea_059"] + ".csv")).unlink()
     with pytest.raises(DataGuardError, match="ccd_lea_059_.* is pinned for 2024-25 but is not on disk"):
         m.load_year(YEAR, tmp_path, manifest)
 
@@ -273,7 +281,7 @@ def test_locate_refuses_an_undeclared_year_id_or_absent_pin(tmp_path):
 @pytest.mark.parametrize("fid", ["059", "lea_059"])
 def test_refuses_a_file_whose_bytes_drifted_from_the_pin(tmp_path, fid):
     manifest = build_year(tmp_path)
-    p = tmp_path / "2024_25" / (FILE_STEMS[fid] + ".csv")
+    p = ydir(tmp_path) / (FILE_STEMS[fid] + ".csv")
     p.write_bytes(p.read_bytes().replace(b"52.00", b"52.01").replace(b"20.50", b"20.51"))
     with pytest.raises(DataGuardError, match=f"{FILE_STEMS[fid]}.* is not the pinned 2024-25 file"):
         m.load_year(YEAR, tmp_path, manifest)              # the LEA file too (#1072)
@@ -282,7 +290,7 @@ def test_refuses_a_file_whose_bytes_drifted_from_the_pin(tmp_path, fid):
 def test_the_lea_file_sha_is_recorded(tmp_path):
     manifest = build_year(tmp_path)
     _, details = m.load_year(YEAR, tmp_path, manifest)
-    p = tmp_path / "2024_25" / (FILE_STEMS["lea_059"] + ".csv")
+    p = ydir(tmp_path) / (FILE_STEMS["lea_059"] + ".csv")
     assert details["sources"]["lea_059"] == [p.name, source_manifest.sha256_file(p)]
 
 
@@ -400,7 +408,7 @@ def test_refuses_a_teacher_count_that_is_not_a_non_negative_number(tmp_path, tok
 # ------------------------------------------------------------------------------------------------- A2: CRC + members
 def test_refuses_a_member_whose_crc_fails(tmp_path):
     manifest = build_year(tmp_path, membership_as_zip=False)
-    d = tmp_path / "2024_25"
+    d = ydir(tmp_path)
     csv_path = d / (FILE_STEMS["052"] + ".csv")
     data = csv_path.read_bytes()
     csv_path.unlink()
@@ -418,7 +426,7 @@ def test_refuses_a_member_whose_crc_fails(tmp_path):
 
 def test_refuses_a_zip_with_two_csv_members(tmp_path):
     manifest = build_year(tmp_path)
-    zip_path = tmp_path / "2024_25" / (FILE_STEMS["052"] + ".zip")
+    zip_path = ydir(tmp_path) / (FILE_STEMS["052"] + ".zip")
     with zipfile.ZipFile(zip_path, "a") as z:
         z.writestr("readme_extra.csv", "x")
     entry = next(e for e in manifest["years"][YEAR] if "052" in e["file"])
@@ -571,7 +579,6 @@ def test_write_year_replaces_the_year_in_chunks_and_logs_lineage(monkeypatch):
 
 def test_dry_run_never_opens_a_session(monkeypatch, tmp_path):
     manifest = build_year(tmp_path)
-    monkeypatch.setattr(m, "RAW_ROOT", tmp_path)
     monkeypatch.setattr(m.source_manifest, "load", lambda source: manifest)
     opened = MagicMock()
 
@@ -580,9 +587,9 @@ def test_dry_run_never_opens_a_session(monkeypatch, tmp_path):
         opened()
         yield _session(1, 1)
     monkeypatch.setattr(m, "session_scope", scope)
-    m.main(["--year", YEAR, "--dry-run"])
+    m.main(["--year", YEAR, "--dry-run"], root=tmp_path)
     opened.assert_not_called()
-    m.main(["--year", YEAR])
+    m.main(["--year", YEAR], root=tmp_path)
     opened.assert_called_once()
 
 
@@ -625,3 +632,17 @@ def test_phase_3_fails_when_only_the_school_import_fails(monkeypatch):
     monkeypatch.setattr(rb, "run_script", fake_run)
     assert rb.phase_3_staff_enrollment(False, "2024-25") is False
     assert seen == [rb.SCRIPTS["import_staff_enrollment"], rb.SCRIPTS["import_ccd_school_staffing"]]
+
+
+def test_the_folder_comes_from_the_manifest_base_and_follows_lct_data_root(tmp_path, monkeypatch):
+    """#1089/#1099: no importer-local folder rule. With no root given, a manifest whose base is the real
+    CCD base resolves under LCT_DATA_ROOT (the `data/` prefix relocates), exactly as
+    source_manifest.ccd_year_folder (every CCD reader) and source_manifest.verify see it."""
+    repo_shaped = tmp_path / "relocated"
+    manifest = build_year(repo_shaped, base=source_manifest.CCD_BASE)
+    moved = repo_shaped / "data"
+    monkeypatch.setenv("LCT_DATA_ROOT", str(moved))
+    sources = m.locate(YEAR, manifest)
+    assert sources["029"][0].parent == moved / "raw/federal/nces-ccd/2024_25" == source_manifest.ccd_year_folder(YEAR)
+    rows, _ = m.load_year(YEAR, None, manifest)
+    assert len(rows) == 3

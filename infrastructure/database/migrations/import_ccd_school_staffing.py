@@ -78,7 +78,9 @@ from infrastructure.utilities.grade_bands import LEVEL_BAND  # noqa: E402
 from infrastructure.utilities.school_year import NCES_PRIMARY_YEAR, is_covid_year, start_year  # noqa: E402
 from infrastructure.utilities.zip_members import open_member  # noqa: E402
 
-RAW_ROOT = project_root / "data" / "raw" / "federal" / "nces-ccd"
+# Where the files live is the MANIFEST's `base`, resolved by source_manifest.year_folder: the one folder
+# rule, which honours LCT_DATA_ROOT (#1089, #1099). `root`, where a function takes it, overrides the tree
+# that `base` is joined to (tests point it at a scratch tree); None means the default resolution.
 MANIFEST_SOURCE = "nces-ccd"
 SCHOOL_FILE_IDS = ("029", "052", "059")
 LEA_FILE_ID = "lea_059"
@@ -155,12 +157,8 @@ def school_year_label(year: str) -> str:
     return f"{s}-{s + 1}"
 
 
-def year_dir(year: str, root: Path = RAW_ROOT) -> Path:
-    return root / year.replace("-", "_")
-
-
 # ---------------------------------------------------------------------------------------- sources
-def locate(year: str, manifest: dict, root: Path = RAW_ROOT) -> dict[str, tuple[Path, dict]]:
+def locate(year: str, manifest: dict, root: Path | None = None) -> dict[str, tuple[Path, dict]]:
     """The one source per file id, AS THE MANIFEST DECLARES IT (one precedence between the release
     zip and an extracted CSV: the manifest's, #1073). A year or id the manifest does not declare,
     two entries for one id, or a declared file absent on disk is refused."""
@@ -169,7 +167,7 @@ def locate(year: str, manifest: dict, root: Path = RAW_ROOT) -> dict[str, tuple[
         raise DataGuardError(
             f"{year} is not declared in the {manifest.get('source')} manifest (years: "
             f"{sorted(manifest.get('years', {}))}); pin its files with nces_ccd_manifest.py --write before importing")
-    d = year_dir(year, root)
+    d = source_manifest.year_folder(manifest, year, root)
     found: dict[str, tuple[Path, dict]] = {}
     for fid, stem in FILE_STEM.items():
         hits = [e for e in entries if e["file"].startswith(stem)]
@@ -504,7 +502,7 @@ def lea_coverage(rows: list[dict], lea: dict[str, float | None]) -> dict:
             "leas_with_school_fte_only": len(set(school_sum) - set(lea))}
 
 
-def load_year(year: str, root: Path = RAW_ROOT, manifest: dict | None = None) -> tuple[list[dict], dict]:
+def load_year(year: str, root: Path | None = None, manifest: dict | None = None) -> tuple[list[dict], dict]:
     """Locate, pin, parse and guard the year's files. Returns the rows and the lineage details."""
     require_year(year)
     manifest = source_manifest.load(MANIFEST_SOURCE) if manifest is None else manifest
@@ -588,7 +586,7 @@ def write_year(session, year: str, rows: list[dict], details: dict) -> int:
     return len(rows)
 
 
-def main(argv: list[str] | None = None) -> None:
+def main(argv: list[str] | None = None, root: Path | None = None) -> None:
     parser = argparse.ArgumentParser(description="Load the CCD school files verbatim into ccd_school_staffing")
     parser.add_argument(
         "--year", default=NCES_PRIMARY_YEAR,
@@ -600,7 +598,7 @@ def main(argv: list[str] | None = None) -> None:
     print("=" * 60)
     print("NCES CCD school staffing import (ccd_school_staffing)")
     print("=" * 60)
-    rows, details = load_year(args.year, RAW_ROOT)
+    rows, details = load_year(args.year, root)
     if args.dry_run:
         print(f"\nDRY RUN: {len(rows):,} rows for {args.year} parsed and guarded; nothing written")
         return

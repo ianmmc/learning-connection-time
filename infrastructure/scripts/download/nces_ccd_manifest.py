@@ -33,7 +33,7 @@ from infrastructure.scripts.download.fetch_nces_ccd import CCD_CATALOG
 from infrastructure.utilities import source_manifest as SM
 
 SOURCE = "nces-ccd"
-BASE = "data/raw/federal/nces-ccd"
+BASE = SM.CCD_BASE
 TABLES = ("school_directory", "school_membership", "school_staff", "district_staff")
 
 

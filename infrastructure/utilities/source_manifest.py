@@ -38,8 +38,20 @@ def base_dir(manifest_or_base: dict | str, root: Path | None = None) -> Path:
 
 
 def year_folder(manifest_or_base: dict | str, year: str, root: Path | None = None) -> Path:
-    """`<base>/<year with '-' as '_'>`: the one spelling of the per-year folder rule."""
+    """`<base>/<year with '-' as '_'>`: the one spelling of the per-year folder rule. Accepts either
+    year form ('2024-25' or the folder form '2024_25')."""
     return base_dir(manifest_or_base, root) / year.replace("-", "_")
+
+
+# Where the NCES CCD files live, repo-relative: the tracked manifest's `base` (pinned equal by
+# tests/test_source_manifest.py). Every CCD reader and the downloader resolve their year folder through
+# ccd_year_folder, so LCT_DATA_ROOT moves all of them together or none (#1099).
+CCD_BASE = "data/raw/federal/nces-ccd"
+
+
+def ccd_year_folder(year: str, root: Path | None = None) -> Path:
+    """The NCES CCD folder for one school year, e.g. data/raw/federal/nces-ccd/2024_25."""
+    return year_folder(CCD_BASE, year, root)
 
 
 def sha256_file(path: Path, chunk: int = 1 << 20) -> str:
